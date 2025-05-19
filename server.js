@@ -22,15 +22,38 @@ app.use((req, res, next) => {
 // Add this before your routes
 app.options('*', cors()); // Enable pre-flight requests for all routes
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
+// MongoDB connection with retry logic
+const connectWithRetry = async () => {
+  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
+  console.log('Attempting to connect to MongoDB...');
+  
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    });
+    console.log('Successfully connected to MongoDB.');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectWithRetry, 5000);
+  }
+};
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('Successfully connected to MongoDB.'))
-.catch((error) => console.error('MongoDB connection error:', error));
+// Initial connection attempt
+connectWithRetry();
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected. Attempting to reconnect...');
+  connectWithRetry();
+});
 
 // Score Schema
 const scoreSchema = new mongoose.Schema({
@@ -41,7 +64,7 @@ const scoreSchema = new mongoose.Schema({
 
 const Score = mongoose.model('Score', scoreSchema);
 
-
+// 1. Handle the specific API endpoint for fetching a single score FIRST
 app.get('/api/scores/:id', async (req, res) => {
   try {
     console.log('Fetching score for ID:', req.params.id);
@@ -54,12 +77,11 @@ app.get('/api/scores/:id', async (req, res) => {
     res.json(score);
   } catch (error) {
     console.error('Error fetching score:', error);
-    res.status(500).json({ error: 'Failed to fetch score' });
+    res.status(500).json({ error: 'Failed to fetch score', details: error.message });
   }
 });
 
 // 2. Handle the specific route for displaying a shared score page SECOND
-// This route should serve the score.html file
 app.get('/score/:id', (req, res) => {
   console.log(`Serving score.html for shared score ID: ${req.params.id}`);
   res.sendFile(path.join(__dirname, 'public', 'score.html'));
@@ -75,33 +97,49 @@ app.post('/api/scores', async (req, res) => {
       return res.status(400).json({ error: 'Score and percentage are required' });
     }
 
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB not connected. Current state:', mongoose.connection.readyState);
+      return res.status(500).json({ error: 'Database connection not ready' });
+    }
+
     const newScore = new Score({ score, percentage });
     await newScore.save();
     console.log('Score saved successfully:', newScore);
     res.json({ id: newScore._id });
   } catch (error) {
     console.error('Error saving score:', error);
-    res.status(500).json({ error: 'Failed to save score' });
+    res.status(500).json({ 
+      error: 'Failed to save score', 
+      details: error.message,
+      connectionState: mongoose.connection.readyState
+    });
   }
 });
 
 // 4. Serve static files from the public directory FOURTH
-// This middleware should come after your specific routes
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Add this before your other routes
 app.get('/test', (req, res) => {
-  res.json({ message: 'Server is working!' });
+  res.json({ 
+    message: 'Server is working!',
+    mongoState: mongoose.connection.readyState,
+    env: process.env.NODE_ENV
+  });
 });
 
 // Add this at the end of your server.js file, before app.listen
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something broke!' });
+  console.error('Global error handler:', err);
+  res.status(500).json({ 
+    error: 'Something broke!',
+    details: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // Make sure this is the absolute last route
-// This catches any request that didn't match the routes/middleware above
 app.get('*', (req, res) => {
   console.log(`Catch-all route serving index.html for URL: ${req.url}`);
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
