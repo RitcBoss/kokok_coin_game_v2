@@ -818,8 +818,8 @@ if (!canvas) {
     // Move the shareScore function inside the main game scope
     async function shareScore(percentage) {
       try {
-        // Use environment variable for API URL
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        // Get the current origin (domain) instead of using process.env
+        const apiUrl = window.location.origin;
         const response = await fetch(`${apiUrl}/api/scores`, {
           method: 'POST',
           headers: {
@@ -840,8 +840,8 @@ if (!canvas) {
         
         const data = await response.json();
         
-        // Create shareable URL with score ID
-        const shareUrl = `http://localhost:3000/score/${data.id}`;
+        // Use the current origin for the share URL
+        const shareUrl = `${window.location.origin}/score/${data.id}`;
         const shareText = `I survived up to ${percentage}% in KOKOK Game! Play now: ${shareUrl}`;
         
         if (navigator.share) {
@@ -916,7 +916,7 @@ if (!canvas) {
         isViewingSharedScore = true;
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const apiUrl = window.location.origin;
             const response = await fetch(`${apiUrl}/api/scores/${scoreId}`);
 
             if (!response.ok) {
