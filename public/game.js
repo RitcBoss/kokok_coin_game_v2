@@ -818,29 +818,54 @@ if (!canvas) {
     // Move the shareScore function inside the main game scope
     async function shareScore(percentage) {
       try {
-        const apiUrl = window.location.origin;
-        console.log('Attempting to share score with API URL:', apiUrl);
-        
-        // Create share text without requiring API
-        const shareText = `I survived up to ${percentage}% in KOKOK Game! Play now: ${window.location.origin}`;
-        
-        // Try to use Web Share API first
-        if (navigator.share) {
+        // First, save the score to the database and get the score ID
+        const response = await fetch('/api/scores', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            score: score,
+            percentage: percentage
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save score');
+        }
+
+        const data = await response.json();
+        const scoreId = data.id;
+        const scoreUrl = `${window.location.origin}/score/${scoreId}`;
+        const shareText = `I survived up to ${percentage}% in KOKOK Game! Check out my score: ${scoreUrl}`;
+
+        // Check if we're in a secure context and if Web Share API is available
+        if (window.isSecureContext && navigator.share) {
           try {
             await navigator.share({
-              title: 'KOKOK Game',
+              title: 'KOKOK Game Score',
               text: shareText,
-              url: window.location.origin
+              url: scoreUrl
             });
             return; // Exit if share was successful
           } catch (shareError) {
-            console.log('Web Share API failed, falling back to clipboard:', shareError);
+            // Only log if it's not a user cancellation
+            if (shareError.name !== 'AbortError') {
+              console.log('Web Share API failed:', shareError);
+            }
+            // Continue to clipboard fallback
           }
         }
         
         // Fallback to clipboard copy
-        copyTextToClipboard(shareText);
-        alert('Share text copied to clipboard!');
+        try {
+          await copyTextToClipboard(shareText);
+          alert('Score URL copied to clipboard!');
+        } catch (clipboardError) {
+          console.error('Clipboard copy failed:', clipboardError);
+          // Last resort fallback - show the URL
+          alert(`Share this URL: ${scoreUrl}`);
+        }
         
       } catch (error) {
         console.error('Failed to share score:', error);
@@ -848,18 +873,33 @@ if (!canvas) {
       }
     }
 
-    // Move the copyTextToClipboard function inside the main game scope
-    function copyTextToClipboard(text) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text);
+    // Update the copyTextToClipboard function
+    async function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (err) {
+          console.error('Clipboard API failed:', err);
+          throw err;
+        }
       } else {
         // Fallback for older browsers
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
+        return new Promise((resolve, reject) => {
+          try {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            resolve(true);
+          } catch (err) {
+            reject(err);
+          }
+        });
       }
     }
 

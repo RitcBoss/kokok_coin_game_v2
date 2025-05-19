@@ -178,25 +178,20 @@
             }
 
             try {
-                // Consider using a relative path if your API is on the same domain
                 const response = await fetch(`/api/scores/${scoreId}`);
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to fetch score: ${response.status} ${response.statusText} - ${errorText}`);
+                    throw new Error(`Failed to fetch score: ${response.status} ${response.statusText}`);
                 }
 
                 const data = await response.json();
 
-                if (data && typeof data.score === 'number' && typeof data.percentage === 'number') {
+                if (data && typeof data.percentage === 'number') {
                     scoreDisplayElement.innerHTML = `
-                        <div class="score-value">Up to ${data.percentage} %</div>
+                        <div class="score-value">Up to ${data.percentage}%</div>
                     `;
                 } else {
-                    scoreDisplayElement.innerHTML = `
-                        <div class="score-value" style="color: orange;">Invalid score data received</div>
-                    `;
-                    console.error("Invalid score data format:", data);
+                    throw new Error('Invalid score data format');
                 }
 
             } catch (error) {
@@ -208,6 +203,7 @@
             }
         }
 
+        // Load score when the page loads
         document.addEventListener('DOMContentLoaded', loadScore);
     </script>
 </body>

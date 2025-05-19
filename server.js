@@ -59,8 +59,8 @@ app.get('/api/scores/:id', async (req, res) => {
 // 2. Handle the specific route for displaying a shared score page SECOND
 // This route should serve the score.html file
 app.get('/score/:id', (req, res) => {
-  console.log(`Serving index.html for shared score ID: ${req.params.id}`);
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  console.log(`Serving score.html for shared score ID: ${req.params.id}`);
+  res.sendFile(path.join(__dirname, 'public', 'score.html'));
 });
 
 // 3. Handle the specific API endpoint for saving scores THIRD
