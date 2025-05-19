@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KOKOK Game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #000;
+            overflow: hidden;
+            touch-action: none;
+            /* ป้องกันการ scroll บนมือถือ */
+            font-family: Arial, sans-serif;
+        }
+
+        #gameContainer {
+            position: relative;
+            text-align: center;
+        }
+
+        #gameCanvas {
+            display: block;
+            background-color: #000;
+            touch-action: none;
+            /* ป้องกันการ scroll บนมือถือ */
+        }
+
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 100;
+            padding: 30px;
+            border-radius: 15px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #gameOver img {
+            max-width: 300px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        #gameOver h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+        }
+
+        #gameOver p:last-child {
+            font-size: 20px;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            #gameOver {
+                width: 90%;
+                padding: 20px;
+            }
+
+            #gameOver h2 {
+                font-size: 24px;
+            }
+
+            #gameOver p:last-child {
+                content: "Tap anywhere to play again";
+            }
+
+            #gameOver img {
+                max-width: 150px;
+            }
+        }
+
+        #score {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            z-index: 10;
+        }
+
+        #gameOver::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #000000a3;
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+
+        #gameOver>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        #gameOver span {
+            display: block;
+            font-size: 46px;
+            color: #5ecd26;
+            margin-top: 20px;
+            text-shadow: 4px 3px 2px rgb(70 145 42 / 80%);
+        }
+
+        .score-label {
+            color: #5ecd26;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-value {
+            color: #FFFFFF;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <!-- <div id="score">Score: <span id="scoreValue">0</span></div> -->
+        <div id="gameOver">
+            <h2>KOKOK TO THE MOON!</h2>
+            <p><span id="finalScore">0%</span></p>
+            <p class="restart-text">Press Space or Tap to play again</p>
+            <img src="images/kokok.png" alt="Game Over">
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOKOK Game Score</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: url("/images/surviveclimb.png");
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .button-33 {
+            background-color: #c2fbd7;
+            border-radius: 100px;
+            box-shadow: rgba(44, 187, 99, .2) 0 -25px 18px -14px inset, rgba(44, 187, 99, .15) 0 1px 2px, rgba(44, 187, 99, .15) 0 2px 4px, rgba(44, 187, 99, .15) 0 4px 8px, rgba(44, 187, 99, .15) 0 8px 16px, rgba(44, 187, 99, .15) 0 16px 32px;
+            color: green;
+            cursor: pointer;
+            display: inline-block;
+            font-family: CerebriSans-Regular, -apple-system, system-ui, Roboto, sans-serif;
+            padding: 7px 20px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 250ms;
+            border: 0;
+            font-size: 16px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .button-33:hover {
+            box-shadow: rgba(44, 187, 99, .35) 0 -25px 18px -14px inset, rgba(44, 187, 99, .25) 0 1px 2px, rgba(44, 187, 99, .25) 0 2px 4px, rgba(44, 187, 99, .25) 0 4px 8px, rgba(44, 187, 99, .25) 0 8px 16px, rgba(44, 187, 99, .25) 0 16px 32px;
+            transform: scale(1.05) rotate(-1deg);
+        }
+
+        .score-card {
+            background-color: #000;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(0, 0, 0, 0.789);
+            background-blend-mode: overlay;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 95%;
+            max-width: 500px;
+            max-height: 930px;
+            overflow-y: auto;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .score-card h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+        }
+
+        .score-display {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .score-value {
+            font-size: 44px;
+            color: #6ccb4f;
+            margin: 0.2em 0;
+            font-weight: bold;
+            /* text-shadow: 4px 3px 2px rgb(70 145 42 / 80%); */
+        }
+
+        .percentage {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-image {
+            max-width: 120px;
+            height: auto;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .kokok-text {
+            font-size: 2em;
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-to-game {
+            display: flex;
+            /* margin-top: 1.5rem; */
+            color: #4caf50;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        .back-to-game:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 400px) {
+            .score-card {
+                padding: 1.5rem;
+            }
+
+            .score-card h1 {
+                font-size: 1.5em;
+            }
+
+            .score-value {
+                font-size: 1.8em;
+            }
+
+            .percentage {
+                font-size: 1em;
+            }
+
+            .kokok-text {
+                font-size: 1.8em;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="score-card">
+        <h1>KOKOK TO THE MOON!</h1>
+        <div id="scoreDisplay" class="score-display">
+            <div class="score-value">Loading...</div>
+            <div class="percentage"></div>
+        </div>
+
+        <!-- Changed from relative path to absolute path starting from root -->
+         <a href="/" class="back-to-game " ><button class="button-33" role="button">Play Again</button></a>
+        <img src="/images/kokok.png" alt="$KOKOK Rocket" class="score-image"
+            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22><text x=%2210%22 y=%2260%22 font-size=%2220%22 fill=%22white%22>🚀 KOKOK</text></svg>';">
+        <div class="kokok-text">$KOKOK</div>
+    </div>
+
+    <script>
+        async function loadScore() {
+            const scoreId = window.location.pathname.split('/').pop();
+            const scoreDisplayElement = document.getElementById('scoreDisplay');
+
+            if (!scoreId) {
+                scoreDisplayElement.innerHTML = `
+                    <div class="score-value" style="color: red;">Error: Score ID missing</div>
+                `;
+                console.error("Score ID missing from URL");
+                return;
+            }
+
+            try {
+                // Consider using a relative path if your API is on the same domain
+                const response = await fetch(`/api/scores/${scoreId}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch score: ${response.status} ${response.statusText} - ${errorText}`);
+                }
+
+                const data = await response.json();
+
+                if (data && typeof data.score === 'number' && typeof data.percentage === 'number') {
+                    scoreDisplayElement.innerHTML = `
+                        <div class="score-value">Up to ${data.percentage} %</div>
+                    `;
+                } else {
+                    scoreDisplayElement.innerHTML = `
+                        <div class="score-value" style="color: orange;">Invalid score data received</div>
+                    `;
+                    console.error("Invalid score data format:", data);
+                }
+
+            } catch (error) {
+                console.error('Failed to load score:', error);
+                scoreDisplayElement.innerHTML = `
+                    <div class="score-value" style="color: red;">Failed to load score</div>
+                    <div class="percentage">Please check the link.</div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadScore);
+    </script>
+</body>
+
+</html>

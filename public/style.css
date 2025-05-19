@@ -1,0 +1,14 @@
+body {
+    text-align: center;
+    background-color: hsl(0, 0%, 12%);
+    color: #fff;
+    font-family: 'Kanit', sans-serif;
+  }
+  div {
+    background-image: 'images/playerl.png'';
+  }
+  
+  canvas {
+    margin-top: 10px;
+  }
+  
