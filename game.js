@@ -108,8 +108,8 @@ function createObstacle() {
   obstacles.push({
     x,
     y: 0,
-    width: 90,  // ปรับขนาดให้เล็กลง
-    height: 90, // ปรับขนาดให้เล็กลง
+    width: 120,  // ปรับขนาดให้เล็กลง
+    height: 120, // ปรับขนาดให้เล็กลง
     speed: 3 * speedMultiplier,
     hitbox: {
       width: 40,  // ปรับ hitbox
@@ -199,8 +199,8 @@ function detectCollision() {
 }
 
 function updateSpeed() {
-  // เพิ่มความเร็วทุก 1000 คะแนน แต่จำกัดที่ 5x
-  const newMultiplier = Math.min(5, 1 + (Math.floor(score / 1000) * 0.5));
+  // เพิ่มความเร็วทุก 1000 คะแนน แต่จำกัดที่ 10x
+  const newMultiplier = Math.min(10, 1 + (Math.floor(score / 1000) * 0.5));
   if (newMultiplier !== speedMultiplier) {
     speedMultiplier = newMultiplier;
     // อัพเดทความเร็วของสิ่งกีดขวางที่มีอยู่
@@ -251,7 +251,7 @@ function draw() {
   if (detectCollision()) {
     gameRunning = false;
     // คำนวณเปอร์เซ็นต์และแสดงผล
-    const percentage = Math.min(Math.round((score / 1000) * 100), 100);
+    const percentage = Math.min(Math.round((score / 1000) * 100));
     finalScoreElement.textContent = `Up to ${percentage}%`;
     // เปลี่ยนรูปใน game over screen เป็น kokok
     document.querySelector('#gameOver img').src = 'images/kokok.png';
