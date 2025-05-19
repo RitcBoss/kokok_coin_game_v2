@@ -23,7 +23,9 @@ app.use((req, res, next) => {
 app.options('*', cors()); // Enable pre-flight requests for all routes
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/kokok_game', {
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
+
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
