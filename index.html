@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOKOK Game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000000;
+            font-family: Arial, sans-serif;
+        }
+
+        #gameContainer {
+            position: relative;
+            text-align: center;
+        }
+
+        #gameCanvas {
+            /* border: 2px solid #333; */
+            background-color: #000;
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-image: url('images/surviveclimb.png');
+            background-size: cover;
+            background-position: center;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            height: 60%;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOver::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+        #gameOver>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        #gameOver img {
+            margin-top: 50px;
+            width: 400px;
+            height: 400px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        #gameOver h2 {
+            color: #6ccb4f;
+            font-size: 36px;
+            margin: 0 0 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #finalScore {
+            color: #6ccb4f;
+            font-size: 60px;
+            margin: 20px 0;
+            text-shadow: 5px 5px 3px rgba(162, 249, 137, 0.5);
+            font-weight: bold;
+        }
+
+        #gameOver span {
+            display: block;
+            font-size: 24px;
+            color: #fff;
+            margin-top: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        #scoreContainer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-align: left;
+        }
+
+        .score-label {
+            color: #5ecd26;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-value {
+            color: #FFFFFF;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="scoreContainer">
+            <span class="score-label">Score:</span>
+            <span class="score-value" id="scoreValue">0</span>
+        </div>
+        <div id="gameOver">
+            <h2>KOKOK TO THE MOON!</h2>
+            <div id="finalScore">up to %</div>
+            <span>Click Spacebar to play</span>
+            <div>
+                <img src="images/player.png" alt="Player">
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
