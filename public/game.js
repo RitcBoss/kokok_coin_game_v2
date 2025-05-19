@@ -818,8 +818,11 @@ if (!canvas) {
     // Move the shareScore function inside the main game scope
     async function shareScore(percentage) {
       try {
+        // Get the API URL based on the current environment
+        const apiUrl = window.location.origin;
+        
         // First, save the score to the database and get the score ID
-        const response = await fetch('/api/scores', {
+        const response = await fetch(`${apiUrl}/api/scores`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -831,12 +834,13 @@ if (!canvas) {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to save score');
+          const errorText = await response.text();
+          throw new Error(`Failed to save score: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
         const data = await response.json();
         const scoreId = data.id;
-        const scoreUrl = `${window.location.origin}/score/${scoreId}`;
+        const scoreUrl = `${apiUrl}/score/${scoreId}`;
         const shareText = `I survived up to ${percentage}% in KOKOK Game! Check out my score: ${scoreUrl}`;
 
         // Check if we're in a secure context and if Web Share API is available
@@ -859,7 +863,7 @@ if (!canvas) {
         
         // Fallback to clipboard copy
         try {
-          await copyTextToClipboard(shareText);
+          await navigator.clipboard.writeText(shareText);
           alert('Score URL copied to clipboard!');
         } catch (clipboardError) {
           console.error('Clipboard copy failed:', clipboardError);
