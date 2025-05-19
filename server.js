@@ -41,7 +41,7 @@ const scoreSchema = new mongoose.Schema({
 
 const Score = mongoose.model('Score', scoreSchema);
 
-// 1. Handle the specific API endpoint for fetching a single score FIRST
+
 app.get('/api/scores/:id', async (req, res) => {
   try {
     console.log('Fetching score for ID:', req.params.id);
@@ -87,11 +87,7 @@ app.post('/api/scores', async (req, res) => {
 
 // 4. Serve static files from the public directory FOURTH
 // This middleware should come after your specific routes
-app.use(express.static(path.join(__dirname, 'public'), {
-  setHeaders: (res, path) => {
-    // console.log(`Serving file: ${path}`); // Keep this for debugging if needed
-  }
-}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Add this before your other routes
 app.get('/test', (req, res) => {
@@ -111,8 +107,14 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Public directory:', path.join(__dirname, 'public'));
-});
+// For Vercel serverless deployment
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+} else {
+  // For local development
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Public directory:', path.join(__dirname, 'public'));
+  });
+}
