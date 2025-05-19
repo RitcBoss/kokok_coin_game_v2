@@ -818,42 +818,30 @@ if (!canvas) {
     // Move the shareScore function inside the main game scope
     async function shareScore(percentage) {
       try {
-        // Get the current origin (domain) instead of using process.env
         const apiUrl = window.location.origin;
-        const response = await fetch(`${apiUrl}/api/scores`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          mode: 'cors',
-          credentials: 'include',
-          body: JSON.stringify({
-            score: score,
-            percentage: percentage
-          })
-        });
+        console.log('Attempting to share score with API URL:', apiUrl);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        // Create share text without requiring API
+        const shareText = `I survived up to ${percentage}% in KOKOK Game! Play now: ${window.location.origin}`;
         
-        const data = await response.json();
-        
-        // Use the current origin for the share URL
-        const shareUrl = `${window.location.origin}/score/${data.id}`;
-        const shareText = `I survived up to ${percentage}% in KOKOK Game! Play now: ${shareUrl}`;
-        
+        // Try to use Web Share API first
         if (navigator.share) {
-          await navigator.share({
-            title: 'KOKOK Game',
-            text: shareText,
-            url: shareUrl
-          });
-        } else {
-          copyTextToClipboard(shareText);
-          alert('Share text copied to clipboard!');
+          try {
+            await navigator.share({
+              title: 'KOKOK Game',
+              text: shareText,
+              url: window.location.origin
+            });
+            return; // Exit if share was successful
+          } catch (shareError) {
+            console.log('Web Share API failed, falling back to clipboard:', shareError);
+          }
         }
+        
+        // Fallback to clipboard copy
+        copyTextToClipboard(shareText);
+        alert('Share text copied to clipboard!');
+        
       } catch (error) {
         console.error('Failed to share score:', error);
         alert('Failed to share score. Please try again.');
