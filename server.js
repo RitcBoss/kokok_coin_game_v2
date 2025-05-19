@@ -6,58 +6,52 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: '*',  // Allow requests from any origin
+  origin: '*',
   methods: ['GET', 'POST'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Accept']
 }));
 app.use(express.json());
 
-// Add this near the top of your server.js
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
 });
 
-// Add this before your routes
-app.options('*', cors()); // Enable pre-flight requests for all routes
+app.options('*', cors());
 
-// MongoDB connection handling
-let isConnecting = false;
-let connectionPromise = null;
+// Improved MongoDB connection handling for serverless environments
+let cachedDb = null;
 
-const connectDB = async () => {
-  // If we're already connected, return the existing connection
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
+const connectToDatabase = async () => {
+  // If we have a cached connection, use it
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    console.log('Using cached database connection');
+    return cachedDb;
   }
 
-  // If we're in the process of connecting, return the existing promise
-  if (isConnecting) {
-    return connectionPromise;
-  }
-
-  // Start a new connection attempt
-  isConnecting = true;
+  // We don't have a cached connection, create a new one
   const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
-  console.log('Attempting to connect to MongoDB...');
-
-  connectionPromise = mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-  }).then(() => {
-    console.log('Successfully connected to MongoDB.');
-    isConnecting = false;
-    return mongoose.connection;
-  }).catch((error) => {
+  console.log('Creating new database connection');
+  
+  try {
+    const db = await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      // These timeouts are important for serverless environments
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      // This option helps with connection management in serverless
+      bufferCommands: false,
+    });
+    
+    console.log('Successfully connected to MongoDB');
+    cachedDb = db;
+    return db;
+  } catch (error) {
     console.error('MongoDB connection error:', error);
-    isConnecting = false;
-    throw error;
-  });
-
-  return connectionPromise;
+    throw error; // Propagate the error up
+  }
 };
 
 // Score Schema
@@ -67,18 +61,20 @@ const scoreSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Score = mongoose.model('Score', scoreSchema);
+const Score = mongoose.models.Score || mongoose.model('Score', scoreSchema);
 
-// 1. Handle the specific API endpoint for fetching a single score FIRST
+// API endpoint for fetching a single score
 app.get('/api/scores/:id', async (req, res) => {
   try {
-    await connectDB();
+    await connectToDatabase();
     console.log('Fetching score for ID:', req.params.id);
     const score = await Score.findById(req.params.id);
+    
     if (!score) {
       console.log('Score not found for ID:', req.params.id);
       return res.status(404).json({ error: 'Score not found' });
     }
+    
     console.log('Score found:', score);
     res.json(score);
   } catch (error) {
@@ -87,16 +83,16 @@ app.get('/api/scores/:id', async (req, res) => {
   }
 });
 
-// 2. Handle the specific route for displaying a shared score page SECOND
+// Route for displaying a shared score page
 app.get('/score/:id', (req, res) => {
   console.log(`Serving score.html for shared score ID: ${req.params.id}`);
   res.sendFile(path.join(__dirname, 'public', 'score.html'));
 });
 
-// 3. Handle the specific API endpoint for saving scores THIRD
+// API endpoint for saving scores
 app.post('/api/scores', async (req, res) => {
   try {
-    await connectDB();
+    await connectToDatabase();
     console.log('Received score data:', req.body);
     const { score, percentage } = req.body;
 
@@ -118,13 +114,13 @@ app.post('/api/scores', async (req, res) => {
   }
 });
 
-// 4. Serve static files from the public directory FOURTH
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Add this before your other routes
+// Test endpoint
 app.get('/test', async (req, res) => {
   try {
-    await connectDB();
+    await connectToDatabase();
     res.json({ 
       message: 'Server is working!',
       mongoState: mongoose.connection.readyState,
@@ -139,7 +135,7 @@ app.get('/test', async (req, res) => {
   }
 });
 
-// Add this at the end of your server.js file, before app.listen
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err);
   res.status(500).json({ 
@@ -149,7 +145,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Make sure this is the absolute last route
+// Catch-all route
 app.get('*', (req, res) => {
   console.log(`Catch-all route serving index.html for URL: ${req.url}`);
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
