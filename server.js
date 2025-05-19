@@ -22,38 +22,43 @@ app.use((req, res, next) => {
 // Add this before your routes
 app.options('*', cors()); // Enable pre-flight requests for all routes
 
-// MongoDB connection with retry logic
-const connectWithRetry = async () => {
+// MongoDB connection handling
+let isConnecting = false;
+let connectionPromise = null;
+
+const connectDB = async () => {
+  // If we're already connected, return the existing connection
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  // If we're in the process of connecting, return the existing promise
+  if (isConnecting) {
+    return connectionPromise;
+  }
+
+  // Start a new connection attempt
+  isConnecting = true;
   const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
   console.log('Attempting to connect to MongoDB...');
-  
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-    });
+
+  connectionPromise = mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  }).then(() => {
     console.log('Successfully connected to MongoDB.');
-  } catch (error) {
+    isConnecting = false;
+    return mongoose.connection;
+  }).catch((error) => {
     console.error('MongoDB connection error:', error);
-    console.log('Retrying connection in 5 seconds...');
-    setTimeout(connectWithRetry, 5000);
-  }
+    isConnecting = false;
+    throw error;
+  });
+
+  return connectionPromise;
 };
-
-// Initial connection attempt
-connectWithRetry();
-
-// Handle MongoDB connection events
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected. Attempting to reconnect...');
-  connectWithRetry();
-});
 
 // Score Schema
 const scoreSchema = new mongoose.Schema({
@@ -67,6 +72,7 @@ const Score = mongoose.model('Score', scoreSchema);
 // 1. Handle the specific API endpoint for fetching a single score FIRST
 app.get('/api/scores/:id', async (req, res) => {
   try {
+    await connectDB();
     console.log('Fetching score for ID:', req.params.id);
     const score = await Score.findById(req.params.id);
     if (!score) {
@@ -90,17 +96,12 @@ app.get('/score/:id', (req, res) => {
 // 3. Handle the specific API endpoint for saving scores THIRD
 app.post('/api/scores', async (req, res) => {
   try {
+    await connectDB();
     console.log('Received score data:', req.body);
     const { score, percentage } = req.body;
 
     if (!score || !percentage) {
       return res.status(400).json({ error: 'Score and percentage are required' });
-    }
-
-    // Check MongoDB connection
-    if (mongoose.connection.readyState !== 1) {
-      console.error('MongoDB not connected. Current state:', mongoose.connection.readyState);
-      return res.status(500).json({ error: 'Database connection not ready' });
     }
 
     const newScore = new Score({ score, percentage });
@@ -121,12 +122,21 @@ app.post('/api/scores', async (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Add this before your other routes
-app.get('/test', (req, res) => {
-  res.json({ 
-    message: 'Server is working!',
-    mongoState: mongoose.connection.readyState,
-    env: process.env.NODE_ENV
-  });
+app.get('/test', async (req, res) => {
+  try {
+    await connectDB();
+    res.json({ 
+      message: 'Server is working!',
+      mongoState: mongoose.connection.readyState,
+      env: process.env.NODE_ENV
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+      mongoState: mongoose.connection.readyState
+    });
+  }
 });
 
 // Add this at the end of your server.js file, before app.listen
