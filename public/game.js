@@ -685,11 +685,15 @@ if (!canvas) {
 
     // Check if click/tap is inside a given button area
     function isClickInsideButton(clickX, clickY, buttonArea) {
-        return buttonArea &&
-               clickX >= buttonArea.x &&
-               clickX <= buttonArea.x + buttonArea.width &&
-               clickY >= buttonArea.y &&
-               clickY <= buttonArea.y + buttonArea.height;
+        if (!buttonArea) return false;
+        
+        // Add a small touch target area for mobile
+        const touchPadding = 10; // Extra padding for touch targets
+        
+        return clickX >= (buttonArea.x - touchPadding) &&
+               clickX <= (buttonArea.x + buttonArea.width + touchPadding) &&
+               clickY >= (buttonArea.y - touchPadding) &&
+               clickY <= (buttonArea.y + buttonArea.height + touchPadding);
     }
 
     canvas.addEventListener('click', function(e) {
@@ -757,16 +761,13 @@ if (!canvas) {
                }
            }
 
-           // Only reset if touch is outside the modal area
-           const modalWidth = Math.min(canvas.width * 0.8, 450);
-           const modalHeight = Math.min(canvas.height * 0.9, getCalculatedModalHeight());
-           const modalX = (canvas.width - modalWidth) / 2;
-           const modalY = (canvas.height - modalHeight) / 2;
-
-           // If touch is outside the modal rectangle, reset
-           if (x < modalX || x > modalX + modalWidth || y < modalY || y > modalY + modalHeight) {
-                resetGame();
-                return;
+           // Only allow tapping anywhere to restart if not clicking a button
+           const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+           if (isMobile && !isClickInsideButton(x, y, playAgainButtonArea) && 
+               !isClickInsideButton(x, y, shareButtonArea) && 
+               !isClickInsideButton(x, y, downloadButtonArea)) {
+               resetGame();
+               return;
            }
         }
 
@@ -783,6 +784,22 @@ if (!canvas) {
                 right = true;
               }
          }
+    });
+
+    // Add touchmove event handler to prevent scrolling
+    canvas.addEventListener('touchmove', function(e) {
+        if (!gameRunning) {
+            e.preventDefault(); // Prevent scrolling when game is over
+        }
+    }, { passive: false });
+
+    // Add touchend event handler
+    canvas.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        if (gameRunning) {
+            left = false;
+            right = false;
+        }
     });
 
     // Add a helper function to calculate the required modal height (used in touchstart check)

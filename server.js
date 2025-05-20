@@ -49,7 +49,7 @@ const connectToDatabase = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       // These timeouts are important for serverless environments
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 1000,
       socketTimeoutMS: 45000,
       // This option helps with connection management in serverless
       bufferCommands: false,
