@@ -1,3 +1,8 @@
+// Load environment variables in development
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -31,7 +36,12 @@ const connectToDatabase = async () => {
   }
 
   // We don't have a cached connection, create a new one
-  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kokok_game';
+  const MONGODB_URI = process.env.MONGODB_URI;
+  
+  if (!MONGODB_URI) {
+    throw new Error('Please define the MONGODB_URI environment variable');
+  }
+  
   console.log('Creating new database connection');
   
   try {
