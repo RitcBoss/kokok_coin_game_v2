@@ -181,11 +181,11 @@ if (!canvas) {
       const touch = e.touches[0];
       const touchX = touch.clientX - canvas.getBoundingClientRect().left;
       
-      // ถ้าเกมจบแล้ว ให้เริ่มเกมใหม่เมื่อแตะที่ไหนก็ได้
-      if (!gameRunning) {
-        resetGame();
-        return;
-      }
+      // // ถ้าเกมจบแล้ว ให้เริ่มเกมใหม่เมื่อแตะที่ไหนก็ได้
+      // if (!gameRunning) {
+      //   resetGame();
+      //   return;
+      // }
       
       // แบ่งหน้าจอเป็นซ้าย-ขวา
       if (touchX < canvas.width / 2) {
@@ -687,9 +687,10 @@ if (!canvas) {
     function isClickInsideButton(clickX, clickY, buttonArea) {
         if (!buttonArea) return false;
         
-        // Add a small touch target area for mobile
-        const touchPadding = 10; // Extra padding for touch targets
+        // Add a larger touch target area for mobile
+        const touchPadding = 25; // Increased padding for better touch targets
         
+        // Create a larger hit area for the button
         return clickX >= (buttonArea.x - touchPadding) &&
                clickX <= (buttonArea.x + buttonArea.width + touchPadding) &&
                clickY >= (buttonArea.y - touchPadding) &&
@@ -733,32 +734,34 @@ if (!canvas) {
     canvas.addEventListener('touchstart', function(e) {
        e.preventDefault(); // Prevent scrolling and default touch actions
 
+       const touch = e.touches[0];
+       const rect = canvas.getBoundingClientRect();
+       const x = touch.clientX - rect.left;
+       const y = touch.clientY - rect.top;
+
        // Only process touches if game is over
         if (!gameRunning) {
-           const touch = e.touches[0];
-           const rect = canvas.getBoundingClientRect();
-           const x = touch.clientX - rect.left;
-           const y = touch.clientY - rect.top;
-
-           // Check Play Again button first (always visible when !gameRunning)
+           // First check if any button is pressed, regardless of position
            if (isClickInsideButton(x, y, playAgainButtonArea)) {
                resetGame();
                return; // Stop processing
            }
 
-           // Check Share and Download buttons ONLY if they are visible (!isViewingSharedScore)
            if (!isViewingSharedScore) {
-               // Check Share button area
                if (isClickInsideButton(x, y, shareButtonArea)) {
                  shareScore(shareButtonArea.percentage);
                  return; // Stop checking other buttons
                }
 
-               // Check Download button area
                if (isClickInsideButton(x, y, downloadButtonArea)) {
                  downloadGameOverImage();
                  return; // Stop processing other buttons
                }
+           }
+
+           // Only check top 50% for non-button touches
+           if (y > canvas.height / 2) {
+               return; // Ignore non-button touches in bottom half
            }
 
            // Only allow tapping anywhere to restart if not clicking a button
@@ -773,7 +776,6 @@ if (!canvas) {
 
        // Handle player movement touch logic only if game is running
         if (gameRunning) {
-             const touch = e.touches[0];
              const touchX = touch.clientX - canvas.getBoundingClientRect().left;
              // Divide screen into left/right for movement
               if (touchX < canvas.width / 2) {
@@ -786,14 +788,41 @@ if (!canvas) {
          }
     });
 
-    // Add touchmove event handler to prevent scrolling
+    // Update touchmove to also respect the top 50% rule when game is over
     canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
         if (!gameRunning) {
+            // Check if touch is on any button first
+            if (isClickInsideButton(x, y, playAgainButtonArea) ||
+                isClickInsideButton(x, y, shareButtonArea) ||
+                isClickInsideButton(x, y, downloadButtonArea)) {
+                return; // Allow touch movement on buttons
+            }
+
+            // Only process non-button touches in top 50%
+            if (y > canvas.height / 2) {
+                return; // Ignore non-button touches in bottom half
+            }
             e.preventDefault(); // Prevent scrolling when game is over
+        } else {
+            const touchX = touch.clientX - canvas.getBoundingClientRect().left;
+            // Divide screen into left/right for movement
+            if (touchX < canvas.width / 2) {
+                left = true;
+                right = false;
+            } else {
+                left = false;
+                right = true;
+            }
         }
     }, { passive: false });
 
-    // Add touchend event handler
+    // Update touchend to reset controls
     canvas.addEventListener('touchend', function(e) {
         e.preventDefault();
         if (gameRunning) {
