@@ -538,17 +538,20 @@
 
                 // Get the current origin (domain) for the API call
                 const apiUrl = window.location.origin;
-                console.log('Fetching scores from:', `${apiUrl}/api/scores/country-totals`);
+                const endpoint = `${apiUrl}/api/scores/country-totals`;
+                console.log('Fetching scores from:', endpoint);
                 
-                const response = await fetch(`${apiUrl}/api/scores/country-totals`, {
+                const response = await fetch(endpoint, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials: 'include' // Include credentials for cross-origin requests
                 });
 
                 console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
@@ -567,7 +570,11 @@
                 // Create a map for quick lookup of fetched scores by country
                 const scoresMap = new Map();
                 fetchedScores.forEach(score => {
-                    scoresMap.set(score.country, score.totalScore);
+                    if (score && score.country && typeof score.totalScore === 'number') {
+                        scoresMap.set(score.country, score.totalScore);
+                    } else {
+                        console.warn('Invalid score data:', score);
+                    }
                 });
 
                 // Create the final list including all countries, defaulting score to 0
