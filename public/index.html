@@ -26,7 +26,95 @@
             font-family: Arial, sans-serif;
         }
 
+        #loginContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            /* gap: 50px; */
+            align-items: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 100;
+            padding: 30px;
+            border-radius: 15px;
+            background-image: url("images/wall.png");
+            background-size: cover;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 800px;
+            height: 1030px;
+        }
+
+        #loginContainer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* background-color: #000000a3; */
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+        #loginContainer>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        #loginContainer h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+        }
+
+        #loginContainer img {
+            max-width: 300px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .menu-button {
+            background-color: #4fe8ab;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            /* width: 250px; */
+            font-weight: bold;
+            width: 100%; /* Responsive width */
+            max-width: 300px; /* Max width to prevent it from being too wide */
+        }
+
+        .menu-button:hover {
+            background-color: #4affae;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        #userInfo {
+            font-size: 1.5em;
+            color: #fff;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
         #gameContainer {
+            display: none;
             position: relative;
             text-align: center;
         }
@@ -38,7 +126,7 @@
             /* ป้องกันการ scroll บนมือถือ */
         }
 
-        #gameOver {
+        /* #gameOver {
             display: none;
             position: fixed;
             top: 50%;
@@ -46,20 +134,16 @@
             transform: translate(-50%, -50%);
             text-align: center;
             color: white;
-            z-index: 100;
+            z-index: 1000;
             padding: 30px;
             border-radius: 15px;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.85);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
             border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #gameOver img {
-            max-width: 300px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-        }
+            width: 90%;
+            max-width: 500px;
+        } */
 
         #gameOver h2 {
             font-size: 32px;
@@ -68,25 +152,65 @@
             color: #ffffff;
         }
 
-        #gameOver p:last-child {
+        #gameOver p {
             font-size: 20px;
             margin: 10px 0;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             color: #ffffff;
         }
 
+        #gameOver span {
+            display: block;
+            font-size: 46px;
+            color: #5ecd26;
+            margin: 20px 0;
+            text-shadow: 4px 3px 2px rgb(70 145 42 / 80%);
+        }
+
+        #gameOver img {
+            max-width: 200px;
+            margin: 20px auto;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .restart-text {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
         @media (max-width: 768px) {
+
+            #loginContainer,
             #gameOver {
-                width: 90%;
+                width: 95%;
                 padding: 20px;
+            }
+
+            #loginContainer h2,
+            #gameOver h2 {
+                font-size: 24px;
+            }
+
+            #loginContainer img,
+            #gameOver img {
+                max-width: 150px;
+            }
+
+            .menu-button {
+                width: 200px;
+                padding: 12px 24px;
+                font-size: 1em;
             }
 
             #gameOver h2 {
                 font-size: 24px;
             }
 
-            #gameOver p:last-child {
-                content: "Tap anywhere to play again";
+            #gameOver span {
+                font-size: 36px;
             }
 
             #gameOver img {
@@ -122,14 +246,6 @@
             z-index: 1;
         }
 
-        #gameOver span {
-            display: block;
-            font-size: 46px;
-            color: #5ecd26;
-            margin-top: 20px;
-            text-shadow: 4px 3px 2px rgb(70 145 42 / 80%);
-        }
-
         .score-label {
             color: #5ecd26;
             font-size: 28px;
@@ -144,21 +260,612 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             margin-left: 10px;
         }
+
+        .player-info {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-country {
+            font-size: 1em;
+            color: #ddd;
+            margin: 5px 0 0 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* New styles for leaderboard */
+        .scores-list-container {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+            color: #fff;
+            font-size: 1.1em;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .score-item .rank {
+            font-weight: bold;
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .score-item .rank i {
+            font-style: normal; /* Ensure icons are not italicized */
+        }
+
+        .score-item .country-name {
+            flex-grow: 1;
+            margin: 0 10px;
+            text-align: left;
+        }
+
+        .score-item .total-score {
+            font-weight: bold;
+            color: #4CAF50; /* Green color for scores */
+            margin-left: 10px;
+        }
+
+        .score-item.worldwide {
+            background-color: rgba(76, 175, 80, 0.3); /* Highlight worldwide */
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .score-item.loading, .score-item.error {
+            justify-content: center;
+            padding: 15px;
+            background-color: transparent;
+            border-bottom: none;
+        }
     </style>
 </head>
 
 <body>
-    <div id="gameContainer">
+    <!-- Login and Menu Container -->
+    <div id="loginContainer">
+        <h2></h2>
+        <div>
+            <img src="images/kokok.png" alt="Kokok Logo">
+            <div id="userInfo" style="display: none;"></div>
+        </div>
+
+
+
+        <div>
+            <div class="menu-options">
+                <button id="gameButton" class="menu-button" style="display: none;">Play Game</button>
+                <a href="https://x.com/Kokoktheroach"><button id="scoresButton" class="menu-button" style="display: none;">Social KOKOK</button></a>
+            </div>
+
+            <div class="auth-buttons">
+                <div id="loginButton" class="menu-button"></div>
+                <button id="logoutButton" class="menu-button" style="display: none;">Logout</button>
+            </div>
+        </div>
+
+        <!-- Container for Country Scores Table -->
+        <div class="Container-score-view" id="countryScoresContainer" style="width: 100%; max-width: 500px; margin-top: 30px;">
+            <h3 style="color: #ebebeb; text-align: center; margin-bottom: 15px;">leaderboard</h3>
+            <div class="scores-list-container" style="max-height: 300px; overflow-y: auto; border: 1px solid rgba(76, 175, 80, 0.5); border-radius: 8px;">
+                 <div id="scoresList">
+                     <!-- Worldwide score will be added here -->
+                     <div class="score-item loading" style="text-align: center; padding: 10px; color: #fff;">
+                         <div class="loading-spinner"></div>
+                         Loading scores...
+                     </div>
+                 </div>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt">
+            <p>Please log in to play the game and view your scores.</p>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="gameContainer" style="display: none;">
         <canvas id="gameCanvas"></canvas>
         <!-- <div id="score">Score: <span id="scoreValue">0</span></div> -->
         <div id="gameOver">
-            <h2>KOKOK TO THE MOON!</h2>
-            <p><span id="finalScore">0%</span></p>
-            <p class="restart-text">Press Space or Tap to play again</p>
-            <img src="images/kokok.png" alt="Game Over">
+            <!-- <h2>KOKOK TO THE MOON!</h2> -->
+            <!-- <p><span id="finalScore">0%</span></p> -->
+            <!-- <p class="restart-text">Press Space or Tap to play again</p>
+            <img src="images/kokok.png" alt="Game Over"> -->
         </div>
+        <button id="backToMenu" class="menu-button" style="display: none;">Back to Menu</button>
     </div>
-    <script src="game.js"></script>
+
+    <script src="js/auth.js"></script>
+    <script src="./game.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Initialize Socket.IO with proper configuration
+        const socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
+
+        // Socket.IO event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server with ID:', socket.id);
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('Disconnected:', reason);
+        });
+
+        socket.on('newScore', (score) => {
+            console.log('New score received:', score);
+            // Update UI with new score
+            updateScoreDisplay(score);
+        });
+
+        socket.on('countryTotalsUpdate', (totals) => {
+            console.log('Country totals updated:', totals);
+            // Update country totals display
+            updateCountryTotals(totals);
+        });
+
+        // Function to update score display
+        function updateScoreDisplay(score) {
+            const scoreElement = document.getElementById('score');
+            if (scoreElement) {
+                scoreElement.textContent = score.score;
+            }
+        }
+
+        // Function to update country totals
+        function updateCountryTotals(totals) {
+            const totalsElement = document.getElementById('country-totals');
+            if (totalsElement) {
+                totalsElement.innerHTML = totals.map(total => 
+                    `<div class="country-total">
+                        <span class="country">${total.country}</span>
+                        <span class="score">${total.totalScore}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        // Get the table elements
+        const countryScoresContainer = document.getElementById('countryScoresContainer');
+        const scoresList = document.getElementById('scoresList');
+
+        // Function to fetch and display country scores
+        async function fetchCountryScores() {
+            const scoresList = document.getElementById('scoresList');
+
+            // Define the complete list of countries based on the backend mapping
+            const allCountries = [
+                'Thailand', 'Singapore', 'Malaysia', 'Philippines', 'Indonesia', 'Vietnam',
+                'South Korea', 'Japan', 'China', 'Hong Kong', 'Taiwan', 'United States',
+                'United Kingdom', 'France', 'Germany', 'Spain', 'Italy', 'Australia', 'New Zealand',
+                // Added more countries from various regions
+                'Canada', 'Mexico', 'Brazil', 'Argentina', 'Colombia',
+                'Russia', 'India', 'Pakistan', 'Bangladesh', 'Turkey',
+                'Nigeria', 'South Africa', 'Egypt', 'Kenya', 'Ghana',
+                'Saudi Arabia', 'United Arab Emirates', 'Qatar',
+                'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Portugal', 'Greece',
+                'Sweden', 'Norway', 'Denmark', 'Finland', 'Poland', 'Ireland',
+                'Mexico', 'Chile', 'Peru', 'Venezuela',
+                'Iran', 'Iraq', 'Israel',
+                'Algeria', 'Morocco',
+                'Argentina', 'Colombia', 'Peru', 'Venezuela', 'Chile', 'Ecuador', 'Bolivia', 'Paraguay', 'Uruguay',
+                'Nigeria', 'Ethiopia', 'Egypt', 'South Africa', 'Kenya', 'Algeria', 'Morocco', 'Ghana', 'Angola', 'Mozambique',
+                'Canada', 'Mexico', 'United States',
+                'China', 'India', 'Indonesia', 'Pakistan', 'Bangladesh', 'Japan', 'Philippines', 'Vietnam', 'Turkey', 'Iran',
+                'Germany', 'United Kingdom', 'France', 'Italy', 'Spain', 'Poland', 'Ukraine', 'Romania', 'Netherlands', 'Belgium',
+                'Brazil', 'Colombia', 'Argentina', 'Peru', 'Venezuela', 'Chile', 'Ecuador', 'Bolivia', 'Paraguay', 'Uruguay',
+                'Egypt', 'Nigeria', 'South Africa', 'Algeria', 'Morocco', 'Ghana', 'Angola', 'Mozambique', 'Ivory Coast', 'Cameroon',
+                'Australia', 'New Zealand',
+                'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+                'South Korea', 'Taiwan', 'Hong Kong', 'Singapore', 'Malaysia', 'Indonesia', 'Vietnam', 'Philippines',
+                'Sweden', 'Norway', 'Denmark', 'Finland', 'Iceland',
+                'Portugal', 'Greece', 'Ireland', 'Switzerland', 'Austria',
+                'Czechia', 'Hungary', 'Bulgaria', 'Serbia', 'Croatia', 'Bosnia and Herzegovina',
+                'Kazakhstan', 'Uzbekistan',
+                'Argentina', 'Brazil', 'Canada', 'China', 'Egypt', 'France', 'Germany', 'Hong Kong', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Japan', 'Kenya', 'Kuwait', 'Malaysia', 'Mexico', 'Morocco', 'Netherlands', 'New Zealand', 'Nigeria', 'Norway', 'Oman', 'Pakistan', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Saudi Arabia', 'Serbia', 'Singapore', 'South Africa', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Taiwan', 'Turkey', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Venezuela', 'Vietnam', 'Argentina', 'Australia', 'Austria', 'Bangladesh', 'Belgium', 'Bolivia', 'Bosnia and Herzegovina', 'Bulgaria', 'Cameroon', 'Chile', 'Colombia', 'Croatia', 'Czechia', 'Denmark', 'Ecuador', 'Ethiopia', 'Finland', 'Ghana', 'Greece', 'Hungary', 'Iceland', 'Ivory Coast', 'Kazakhstan', 'Kenya', 'Mozambique', 'Paraguay', 'Uruguay', 'Uzbekistan',
+
+            ];
+
+            // Remove duplicates and sort alphabetically
+            const uniqueCountries = [...new Set(allCountries)].sort();
+
+            try {
+                // Show loading state
+                scoresList.innerHTML = `
+                     <div class="score-item loading" style="text-align: center; padding: 10px; color: #fff;">
+                         <div class="loading-spinner"></div>
+                         Loading scores...
+                     </div>
+                 `;
+
+                // Get the current origin (domain) for the API call
+                const apiUrl = window.location.origin;
+                console.log('Fetching scores from:', `${apiUrl}/api/scores/country-totals`);
+                
+                // Get the authentication token from localStorage
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(`${apiUrl}/api/scores/country-totals`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const fetchedScores = await response.json();
+                console.log('Received scores:', fetchedScores);
+
+                // Create a map for quick lookup of fetched scores by country
+                const scoresMap = new Map();
+                fetchedScores.forEach(score => {
+                    scoresMap.set(score.country, score.totalScore);
+                });
+
+                // Create the final list including all countries, defaulting score to 0
+                const allCountryScores = uniqueCountries.map(country => ({
+                    country: country,
+                    totalScore: scoresMap.get(country) || 0
+                }));
+
+                // Sort the combined list by total score in descending order
+                allCountryScores.sort((a, b) => b.totalScore - a.totalScore);
+
+
+                if (allCountryScores.length === 0) {
+                    scoresList.innerHTML = `
+                         <div class="score-item" style="text-align: center; padding: 10px; color: #fff;">
+                             No scores available yet
+                         </div>
+                      `;
+                    return;
+                }
+
+                // Add Worldwide score (assuming it's provided separately or calculated)
+                // For now, let's hardcode a placeholder or assume the first item is worldwide if available
+                let worldwideScoreHtml = '';
+                const worldwideScoreData = fetchedScores.find(score => score.country === 'Worldwide'); // Example: assuming 'Worldwide' is a country entry
+
+                if (worldwideScoreData) {
+                     worldwideScoreHtml = `
+                         <div class="score-item worldwide">
+                             <span class="rank">🌍</span> <!-- Globe emoji for Worldwide -->
+                             <span class="country-name">Worldwide</span>
+                             <span class="total-score">${worldwideScoreData.pps ? `<span style="color: #4CAF50;">${worldwideScoreData.pps} PPS</span> ` : ''}${worldwideScoreData.totalScore.toLocaleString()}</span>
+                         </div>
+                     `;
+                }
+
+                // Display the scores with animation, excluding worldwide if it was fetched as a country
+                const countryScoresHtml = allCountryScores
+                    .filter(score => score.country !== 'Worldwide') // Exclude if worldwide was in country list
+                    .map((score, index) => {
+                        const rank = index + 1;
+                        let rankDisplay;
+                        if (rank === 1) {
+                            rankDisplay = '🏆';
+                        } else if (rank === 2) {
+                            rankDisplay = '🥈';
+                        } else if (rank === 3) {
+                            rankDisplay = '🥉';
+                        } else {
+                            rankDisplay = rank;
+                        }
+
+                        // Simple mapping for flags (add more as needed)
+                        const flagMap = {
+                            'Thailand': '🇹🇭',
+                            'Hong Kong': '🇭🇰',
+                            'Taiwan': '🇹🇼',
+                            'Japan': '🇯🇵',
+                            'South Korea': '🇰🇷',
+                            'Malaysia': '🇲🇾',
+                            'Saudi Arabia': '🇸🇦',
+                            'United States': '🇺🇸',
+                            'Indonesia': '🇮🇩',
+                            'Finland': '🇫🇮',
+                            'Sweden': '🇸🇪',
+                            'Poland': '🇵🇱',
+                            'United Arab Emirates': '🇦🇪',
+                            'Denmark': '🇩🇰',
+                            'Vietnam': '🇻🇳',
+                            'Egypt': '🇪🇬',
+                            'France': '🇫🇷',
+                            'Philippines': '🇵🇭',
+                            'Czechia': '🇨🇿',
+                            'Iraq': '🇮🇶',
+                            'Serbia': '🇷🇸',
+                            'Norway': '🇳🇴',
+                            'Singapore': '🇸🇬',
+                            'United Kingdom': '🇬🇧',
+                            'Germany': '🇩🇪',
+                            'Spain': '🇪🇸',
+                            'Italy': '🇮🇹',
+                            'Australia': '🇦🇺',
+                            'New Zealand': '🇳🇿',
+                            'China': '🇨🇳',
+                            // Added flags for new countries
+                            'Canada': '🇨🇦',
+                            'Mexico': '🇲🇽',
+                            'Brazil': '🇧🇷',
+                            'Argentina': '🇦🇷',
+                            'Colombia': '🇨🇴',
+                            'Russia': '🇷🇺',
+                            'India': '🇮🇳',
+                            'Pakistan': '🇵🇰',
+                            'Bangladesh': '🇧🇩',
+                            'Turkey': '🇹🇷',
+                            'Nigeria': '🇳🇬',
+                            'South Africa': '🇿🇦',
+                            'Kenya': '🇰🇪',
+                            'Ghana': '🇬🇭',
+                            'Qatar': '🇶🇦',
+                            'Netherlands': '🇳🇱',
+                            'Belgium': '🇧🇪',
+                            'Switzerland': '🇨🇭',
+                            'Austria': '🇦🇹',
+                            'Portugal': '🇵🇹',
+                            'Greece': '🇬🇷',
+                            'Ireland': '🇮🇪',
+                            'Chile': '🇨🇱',
+                            'Peru': '🇵🇪',
+                            'Venezuela': '🇻🇪',
+                            'Iran': '🇮🇷',
+                            'Israel': '🇮🇱',
+                            'Algeria': '🇩🇿',
+                            'Morocco': '🇲🇦',
+                            'Ecuador': '🇪🇨',
+                            'Bolivia': '🇧🇴',
+                            'Paraguay': '🇵🇾',
+                            'Uruguay': '🇺🇾',
+                            'Ethiopia': '🇪🇹',
+                            'Angola': '🇦🇴',
+                            'Mozambique': '🇲🇿',
+                            'Ivory Coast': '🇨🇮',
+                            'Cameroon': '🇨🇲',
+                            'Ukraine': '🇺🇦',
+                            'Romania': '🇷🇴',
+                            'Hungary': '🇭🇺',
+                            'Bulgaria': '🇧🇬',
+                            'Croatia': '🇭🇷',
+                            'Bosnia and Herzegovina': '🇧🇦',
+                            'Kazakhstan': '🇰🇿',
+                            'Uzbekistan': '🇺🇿',
+                            'Kuwait': '🇰🇼',
+                            'Bahrain': '🇧🇭',
+                            'Oman': '🇴🇲',
+                            'Iceland': '🇮🇸',
+                        };
+
+                        const countryFlag = flagMap[score.country] || ''; // Get flag or empty string
+
+                        return `
+                     <div class="score-item" style="animation: fadeIn 0.5s ease-in-out ${index * 0.05}s;">
+                         <span class="rank">${rankDisplay}</span>
+                         <span class="country-name">${countryFlag} ${score.country || 'Unknown'}</span>
+                         <span class="total-score">${score.totalScore.toLocaleString()}</span>
+                     </div>
+                 `;
+                    }).join('');
+
+                 scoresList.innerHTML = worldwideScoreHtml + countryScoresHtml;
+
+            } catch (error) {
+                console.error('Error fetching country scores:', error);
+                scoresList.innerHTML = `
+                     <div class="score-item error" style="text-align: center; padding: 10px; color: #ff4444;">
+                         Failed to load scores. Please try again later.<br>
+                         <small style="font-size: 0.8em;">Error: ${error.message}</small>
+                     </div>
+                  `;
+            }
+        }
+
+        // Add CSS for loading spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .loading-spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spin 1s ease-in-out infinite;
+                margin-right: 10px;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Function to show the menu and fetch scores
+        window.showMenuAndLoadScores = function() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            const gameContainer = document.getElementById('gameContainer');
+            if (gameContainer) {
+                gameContainer.style.display = 'none';
+            }
+            const gameButton = document.getElementById('gameButton');
+            const loginPrompt = document.getElementById('loginPrompt');
+
+            // Determine if the user is logged in (assuming auth.js sets a global flag or item in localStorage)
+            const isLoggedIn = localStorage.getItem('token') !== null; // Example check
+
+            if (gameButton) {
+                gameButton.style.display = isLoggedIn ? 'block' : 'none'; // Show Play Game only if logged in
+            }
+            if (loginPrompt) {
+                loginPrompt.style.display = isLoggedIn ? 'none' : 'block'; // Show Login Prompt only if not logged in
+            }
+
+            const countryScoresContainer = document.getElementById('countryScoresContainer');
+            if (countryScoresContainer) {
+                countryScoresContainer.style.display = isLoggedIn ? 'block' : 'none'; // Show leaderboard only if logged in
+                fetchCountryScores(); // Always attempt to fetch scores (server handles auth)
+            }
+        }
+
+        // Initialize game function (this was likely intended for the button click)
+        // function initGame() {
+        //     document.getElementById('backToMenu').style.display = 'none';
+        //     const canvas = document.getElementById('gameCanvas');
+        //     if (canvas) {
+        //         // Game initialization logic here
+        //     }
+        // }
+
+        // Add event listener to the Play Game button
+        const gameButton = document.getElementById('gameButton');
+        if (gameButton) {
+            gameButton.addEventListener('click', () => {
+                console.log('Play Game button clicked.');
+                startGame(); // Call the startGame function from game.js
+            });
+        }
+
+        // Add back to menu functionality
+        document.getElementById('backToMenu').addEventListener('click', () => {
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            fetchCountryScores(); // Refresh scores when returning to menu
+        });
+
+        // Fetch scores when the page loads and show menu
+        document.addEventListener('DOMContentLoaded', () => {
+            // fetchCountryScores(); // Moved inside showMenuAndLoadScores
+            // Only show the menu if not on a shared score URL
+            const pathSegments = window.location.pathname.split('/');
+            if (!(pathSegments.length === 3 && pathSegments[1] === 'score')) {
+                 showMenuAndLoadScores(); // This now also fetches scores and manages button/prompt visibility
+            }
+            // If it is a shared score URL, game.js will handle the display
+        });
+
+        // Function to load a specific score
+        async function loadScore(scoreId) {
+            try {
+                console.log('Loading score:', scoreId);
+                const apiUrl = window.location.origin;
+                const response = await fetch(`${apiUrl}/api/scores/${scoreId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch score: ${response.status} ${response.statusText}`);
+                }
+
+                const score = await response.json();
+                console.log('Score loaded:', score);
+
+                // Update the game over screen with the score data
+                const gameOverScreen = document.getElementById('gameOver');
+                if (gameOverScreen) {
+                    gameOverScreen.innerHTML = `
+                        <h2>KOKOK TO THE MOON!</h2>
+                        <p><span id="finalScore">${score.percentage}%</span></p>
+                        <div class="player-info">
+                            <p class="player-name">${score.playerData.name}</p>
+                            <p class="player-country">${score.playerData.country}</p>
+                        </div>
+                        <p class="restart-text">Press Space or Tap to play again</p>
+                        <img src="images/kokok.png" alt="Game Over">
+                    `;
+                }
+
+                // Update the score display
+                const scoreElement = document.getElementById('score');
+                if (scoreElement) {
+                    scoreElement.textContent = score.score;
+                }
+
+                return score;
+            } catch (error) {
+                console.error('Error loading score:', error);
+                // Show error message to user
+                const gameOverScreen = document.getElementById('gameOver');
+                if (gameOverScreen) {
+                    gameOverScreen.innerHTML = `
+                        <h2>Error Loading Score</h2>
+                        <p style="color: #ff4444;">${error.message}</p>
+                        <p class="restart-text">Press Space or Tap to try again</p>
+                    `;
+                }
+                throw error;
+            }
+        }
+    </script>
 </body>
 
 </html>

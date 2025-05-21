@@ -1,3 +1,159 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.game-container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.game-title {
+    font-size: 3em;
+    color: #ffd700;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.user-info {
+    font-size: 1.5em;
+    color: #fff;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.auth-buttons {
+    margin-bottom: 30px;
+}
+
+.menu-button {
+    background-color: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* width: 250px; */
+    font-weight: bold;
+}
+
+.menu-button:hover {
+    background-color: #ffed4a;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    text-decoration: none;
+}
+
+.login-prompt {
+    margin-top: 30px;
+    color: #fff;
+    font-size: 1.2em;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+/* Google Sign-In button customization */
+#loginButton {
+    display: inline-block;
+    margin: 10px auto;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 20px;
+    }
+
+    .game-title {
+        font-size: 2em;
+    }
+
+    .menu-button {
+        width: 200px;
+        padding: 12px 24px;
+        font-size: 1em;
+    }
+}
+
+#logoutButton {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+#logoutButton:hover {
+    background-color: #c82333;
+}
+
+#userInfo {
+    font-size: 1.2em;
+    color: #666;
+}
+
+main {
+    text-align: center;
+}
+
+#gameContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+#gameButton, #scoresButton {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 200px;
+}
+
+#gameButton:hover, #scoresButton:hover {
+    background-color: #0056b3;
+}
+
 body {
     text-align: center;
     background-color: hsl(0, 0%, 12%);

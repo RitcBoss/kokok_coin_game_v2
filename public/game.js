@@ -348,21 +348,70 @@ if (!canvas) {
 
     function detectCollision() {
       for (let ob of obstacles) {
-        // คำนวณตำแหน่ง center ของ hitbox
+        // Calculate center points of hitboxes
         const playerCenterX = player.x + player.width/2;
         const playerCenterY = player.y + player.height/2;
         const obstacleCenterX = ob.x + ob.width/2;
         const obstacleCenterY = ob.y + ob.height/2;
 
-        // คำนวณระยะห่างระหว่างจุดศูนย์กลาง
+        // Calculate distance between centers
         const dx = playerCenterX - obstacleCenterX;
         const dy = playerCenterY - obstacleCenterY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // คำนวณระยะห่างที่น้อยที่สุดที่จะชนกัน
+        // Calculate minimum distance for collision
         const minDistance = (player.hitbox.width/2 + ob.hitbox.height/2);
 
         if (distance < minDistance) {
+          gameRunning = false;
+          const percentage = Math.min(Math.round((score / 1000) * 100));
+          
+          // Immediately save the score
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const token = localStorage.getItem('token');
+          
+          if (token) {
+            const apiUrl = window.location.origin;
+            fetch(`${apiUrl}/api/scores`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                score: score,
+                percentage: percentage,
+                timezone: timezone
+              })
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Failed to save score: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Score saved successfully:', data);
+            })
+            .catch(error => {
+              console.error('Error saving score:', error);
+            });
+          }
+          
+          // Clear canvas and draw game over screen
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawBackground();
+          drawGameOverScreen(percentage);
+          
+          // Show HTML game over element
+          if (gameOverText) {
+            gameOverText.style.display = 'block';
+            const finalScoreSpan = gameOverText.querySelector('#finalScore');
+            if (finalScoreSpan) {
+              finalScoreSpan.textContent = `${percentage}%`;
+            }
+          }
+          
           return true;
         }
       }
@@ -457,14 +506,14 @@ if (!canvas) {
 
       // Title
       ctx.save();
-      ctx.font = "bold 28px Arial"; // Keep slightly smaller font for title
+      ctx.font = "bold 24px Arial"; // Keep slightly smaller font for title
       ctx.fillStyle = "#fff";
       ctx.textAlign = "center";
       ctx.fillText("KOKOK TO THE MOON!", canvas.width / 2, currentY);
       currentY += 28 + buttonSpacing; // Move Y down by title height + spacing
 
       // Score Percentage
-      ctx.font = "bold 48px Arial";
+      ctx.font = "bold 44px Arial";
       ctx.fillStyle = "#6ccb4f";
        if (isViewingSharedScore && sharedScoreData && sharedScoreData.error) {
            ctx.font = "bold 24px Arial";
@@ -529,62 +578,63 @@ if (!canvas) {
        currentY += buttonHeight + buttonSpacing; // Move Y down by button height + spacing
 
 
-      if (!isViewingSharedScore) {
-          // Draw Share button (Only in active game over)
-          const shareBtnY = currentY; // Position Share button below Play Again
-          shareButtonArea = {
-            x: canvas.width / 2 - buttonWidth / 2, // Center horizontally
-            y: shareBtnY,
-            width: buttonWidth,
-            height: buttonHeight,
-            percentage: percentage // Store percentage for sharing
-          };
+       if (!isViewingSharedScore) {
+           // Draw Share button (Only in active game over)
+           const shareBtnY = currentY; // Position Share button below Play Again
+           shareButtonArea = {
+             x: canvas.width / 2 - buttonWidth / 2, // Center horizontally
+             y: shareBtnY,
+             width: buttonWidth,
+             height: buttonHeight,
+             percentage: percentage // Store percentage for sharing
+           };
 
-          ctx.save();
-          ctx.fillStyle = "#4caf50"; // Green Share button
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 2;
-          ctx.shadowColor = "#222";
-          ctx.shadowBlur = 8;
-          roundRect(ctx, shareButtonArea.x, shareButtonArea.y, buttonWidth, buttonHeight, 12, true, true);
-          ctx.font = "bold 22px Arial";
-          ctx.fillStyle = "#fff";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("Share Score", canvas.width / 2, shareBtnY + buttonHeight / 2);
-          ctx.restore();
+           ctx.save();
+           ctx.fillStyle = "#4caf50"; // Green Share button
+           ctx.strokeStyle = "#fff";
+           ctx.lineWidth = 2;
+           ctx.shadowColor = "#222";
+           ctx.shadowBlur = 8;
+           roundRect(ctx, shareButtonArea.x, shareButtonArea.y, buttonWidth, buttonHeight, 12, true, true);
+           ctx.font = "bold 22px Arial";
+           ctx.fillStyle = "#fff";
+           ctx.textAlign = "center";
+           ctx.textBaseline = "middle";
+           ctx.fillText("Share Score", canvas.width / 2, shareBtnY + buttonHeight / 2);
+           ctx.restore();
 
-          currentY += buttonHeight + buttonSpacing; // Move Y down by button height + spacing
+           currentY += buttonHeight + buttonSpacing; // Move Y down by button height + spacing
 
 
-          // Draw Download button (Only in active game over)
-          const downloadBtnY = currentY; // Position Download button below Share
-          downloadButtonArea = {
-              x: canvas.width / 2 - buttonWidth / 2, // Center horizontally
-              y: downloadBtnY,
-              width: buttonWidth,
-              height: buttonHeight
-          };
+           // Draw Download button (Only in active game over)
+           const downloadBtnY = currentY; // Position Download button below Share
+           downloadButtonArea = {
+               x: canvas.width / 2 - buttonWidth / 2, // Center horizontally
+               y: downloadBtnY,
+               width: buttonWidth,
+               height: buttonHeight
+           };
 
-          ctx.save();
-          ctx.fillStyle = "#007bff"; // Use blue for Download
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 2;
-          ctx.shadowColor = "#222";
-          ctx.shadowBlur = 8;
-          roundRect(ctx, downloadButtonArea.x, downloadButtonArea.y, buttonWidth, buttonHeight, 12, true, true);
-          ctx.font = "bold 22px Arial";
-          ctx.fillStyle = "#fff";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("Download Image", canvas.width / 2, downloadBtnY + buttonHeight / 2);
-          ctx.restore();
+           ctx.save();
+           ctx.fillStyle = "#007bff"; // Use blue for Download
+           ctx.strokeStyle = "#fff";
+           ctx.lineWidth = 2;
+           ctx.shadowColor = "#222";
+           ctx.shadowBlur = 8;
+           roundRect(ctx, downloadButtonArea.x, downloadButtonArea.y, buttonWidth, buttonHeight, 12, true, true);
+           ctx.font = "bold 22px Arial";
+           ctx.fillStyle = "#fff";
+           ctx.textAlign = "center";
+           ctx.textBaseline = "middle";
+           ctx.fillText("Download Image", canvas.width / 2, downloadBtnY + buttonHeight / 2);
+           ctx.restore();
 
-      } else {
-          // If viewing shared score, ensure Share/Download button areas are null
+       } else {
+           // If viewing shared score but there was an error, ensure Share/Download/Upload button areas are null
            shareButtonArea = null;
            downloadButtonArea = null;
-      }
+           uploadScoreButtonArea = null;
+       }
 
       ctx.restore(); // Restore context after drawing modal
     }
@@ -635,11 +685,10 @@ if (!canvas) {
 
       // Only continue the game loop if game is running
       if (!gameRunning) {
-        // Game is over (from active play) - draw game over screen
-        // percentage is calculated inside detectCollision before setting gameRunning = false
-        drawBackground(); // This draws the game over background
-        // drawGameOverScreen is called directly from detectCollision
-        // No need to call it here again, just return
+        // Game is over - ensure game over screen is visible
+        if (gameOverText) {
+          gameOverText.style.display = 'block';
+        }
         return;
       }
 
@@ -667,15 +716,12 @@ if (!canvas) {
 
       drawPlayer();
       drawObstacles();
-      drawScore(); // Draws the score on the canvas during gameplay
+      drawScore();
       moveObstacles();
 
+      // Check for collision
       if (detectCollision()) {
-        gameRunning = false;
-        const percentage = Math.min(Math.round((score / 1000) * 100));
-        // Game over! Draw the game over screen immediately
-        drawGameOverScreen(percentage);
-        // The requestAnimationFrame loop will stop because gameRunning is false
+        // The game over screen is drawn directly from detectCollision
         return;
       }
 
@@ -710,19 +756,17 @@ if (!canvas) {
               return; // Stop processing
           }
 
-          // Check Share and Download buttons ONLY if they are visible (!isViewingSharedScore)
-          if (!isViewingSharedScore) {
-              // Check Share button area
-              if (isClickInsideButton(x, y, shareButtonArea)) {
-                shareScore(shareButtonArea.percentage);
-                return; // Stop checking other buttons
-              }
+          // Check Share button area (always visible when !gameRunning)
+          if (isClickInsideButton(x, y, shareButtonArea)) {
+            // Use the percentage stored in the shareButtonArea
+            shareScore(shareButtonArea.percentage);
+            return; // Stop checking other buttons
+          }
 
-              // Check Download button area
-              if (isClickInsideButton(x, y, downloadButtonArea)) {
-                downloadGameOverImage();
-                return; // Stop checking other buttons
-              }
+          // Check Download button area (always visible when !gameRunning)
+          if (isClickInsideButton(x, y, downloadButtonArea)) {
+            navigateToScorePageForDownload();
+            return; // Stop checking other buttons
           }
 
           // Optional: Handle tap outside modal/buttons to reset game
@@ -747,16 +791,14 @@ if (!canvas) {
                return; // Stop processing
            }
 
-           if (!isViewingSharedScore) {
-               if (isClickInsideButton(x, y, shareButtonArea)) {
-                 shareScore(shareButtonArea.percentage);
-                 return; // Stop checking other buttons
-               }
+           if (isClickInsideButton(x, y, shareButtonArea)) {
+             shareScore(shareButtonArea.percentage);
+             return; // Stop checking other buttons
+           }
 
-               if (isClickInsideButton(x, y, downloadButtonArea)) {
-                 downloadGameOverImage();
-                 return; // Stop processing other buttons
-               }
+           if (isClickInsideButton(x, y, downloadButtonArea)) {
+             navigateToScorePageForDownload();
+             return; // Stop processing other buttons
            }
 
            // Only check top 50% for non-button touches
@@ -864,18 +906,27 @@ if (!canvas) {
     // Move the shareScore function inside the main game scope
     async function shareScore(percentage) {
       try {
-        // Get the API URL based on the current environment
         const apiUrl = window.location.origin;
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          throw new Error('You must be logged in to share your score');
+        }
+
+        // Get timezone
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         
         // First, save the score to the database and get the score ID
         const response = await fetch(`${apiUrl}/api/scores`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
             score: score,
-            percentage: percentage
+            percentage: percentage,
+            timezone: timezone
           })
         });
 
@@ -885,7 +936,7 @@ if (!canvas) {
         }
 
         const data = await response.json();
-        const scoreId = data.id;
+        const scoreId = data._id; // Changed from data.id to data._id to match MongoDB's ID field
         const scoreUrl = `${apiUrl}/score/${scoreId}`;
         const shareText = `I survived up to ${percentage}% in KOKOK Game! Check out my score: ${scoreUrl}`;
 
@@ -953,39 +1004,89 @@ if (!canvas) {
       }
     }
 
-    // Add this function to handle the image download
-    function downloadGameOverImage() {
-        console.log('Attempting to download game over image...');
-        
+    // Add this function to download the currently displayed canvas as an image
+    function downloadSharedScoreImage() {
+        console.log('Attempting to download score image...');
+
         try {
-            // Get the canvas element
-            const canvas = document.getElementById('gameCanvas'); 
-            
+            const canvas = document.getElementById('gameCanvas');
             if (!canvas) {
                 console.error('Canvas element not found for download.');
-                alert('Could not capture game screen.');
+                alert('Could not capture screen for download.');
                 return;
             }
 
-            // Get canvas data as PNG (or 'image/jpeg')
-            const dataURL = canvas.toDataURL('image/png'); 
+            // Get canvas data as PNG with high quality
+            const dataURL = canvas.toDataURL('image/png', 1.0);
 
             // Create a temporary anchor element
             const link = document.createElement('a');
-            link.href = dataURL; // Set the href to the canvas data URL
-            link.download = 'kokok_game_over_score.png'; // Set the download filename
+            link.href = dataURL;
             
-            // Append to body and click to trigger download
-            document.body.appendChild(link); 
-            link.click(); 
-            
-            // Clean up the temporary link element
-            document.body.removeChild(link); 
-            console.log('Canvas download triggered.');
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `kokok_score_${timestamp}.png`;
+            link.download = filename;
+
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            console.log('Score image download triggered:', filename);
+
+            // Show success message
+            alert('Score image downloaded successfully!');
 
         } catch (error) {
             console.error('Failed to capture canvas for download:', error);
             alert('Could not download image. Please try again.');
+        }
+    }
+
+    // Add this function to navigate to the score page for download
+    async function navigateToScorePageForDownload() {
+        console.log('Attempting to navigate to score page for download...');
+    
+        try {
+            // Get timezone
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                throw new Error('You must be logged in to save your score');
+            }
+
+            // Save the score to get an ID
+            const apiUrl = window.location.origin;
+            const response = await fetch(`${apiUrl}/api/scores`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    score: score,
+                    percentage: Math.min(Math.round((score / 1000) * 100)),
+                    timezone: timezone
+                })
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to save score before navigating: ${response.status} ${response.statusText} - ${errorText}`);
+            }
+    
+            const data = await response.json();
+            const scoreId = data._id;
+            const scoreUrl = `${apiUrl}/score/${scoreId}`;
+    
+            // Navigate the user to the score page
+            window.location.href = scoreUrl;
+    
+        } catch (error) {
+            console.error('Failed to navigate to score page for download:', error);
+            alert('Could not prepare score for download. Please try again.');
         }
     }
 
@@ -995,24 +1096,33 @@ if (!canvas) {
 
         try {
             const apiUrl = window.location.origin;
-            const response = await fetch(`${apiUrl}/api/scores/${scoreId}`);
+            console.log(`Fetching score from: ${apiUrl}/api/scores/${scoreId}`);
+            
+            const response = await fetch(`${apiUrl}/api/scores/${scoreId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
 
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`Failed to fetch shared score ${scoreId}: ${response.status} ${response.statusText} - ${errorText}`);
-                 sharedScoreData = { score: 0, percentage: 0, error: 'Failed to load score' }; // Store error state
+                sharedScoreData = { score: 0, percentage: 0, error: `Failed to load score: ${response.statusText}` };
             } else {
                 sharedScoreData = await response.json();
-                 console.log('Fetched shared score data:', sharedScoreData);
-                 if (!sharedScoreData || typeof sharedScoreData.score !== 'number' || typeof sharedScoreData.percentage !== 'number') {
-                     console.error('Invalid data format for shared score:', sharedScoreData);
-                      sharedScoreData = { score: 0, percentage: 0, error: 'Invalid score data' }; // Store invalid data state
-                 }
+                console.log('Fetched shared score data:', sharedScoreData);
+                
+                // Validate the score data
+                if (!sharedScoreData || typeof sharedScoreData.score !== 'number' || typeof sharedScoreData.percentage !== 'number') {
+                    console.error('Invalid data format for shared score:', sharedScoreData);
+                    sharedScoreData = { score: 0, percentage: 0, error: 'Invalid score data' };
+                }
             }
 
         } catch (error) {
             console.error(`Error during fetch for score ${scoreId}:`, error);
-            sharedScoreData = { score: 0, percentage: 0, error: 'Network Error' }; // Store network error state
+            sharedScoreData = { score: 0, percentage: 0, error: 'Network Error' };
         }
 
         // Ensure images are loaded before drawing the final screen
@@ -1024,47 +1134,68 @@ if (!canvas) {
             new Promise(resolve => { if (backgroundImg.complete) resolve(); else backgroundImg.onload = resolve; }),
             new Promise(resolve => { if (gameOverBackgroundImg.complete) resolve(); else gameOverBackgroundImg.onload = resolve; })
         ]).then(() => {
-             // Now draw the game over screen using the fetched data
+            // Now draw the game over screen using the fetched data
             console.log('Images loaded for shared score display. Drawing game over screen.');
-             // Clear the canvas first
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             drawBackground(); // Draw game over background
-             // Use fetched percentage, default to 0 if fetch failed or data invalid
-             const percentageToDisplay = sharedScoreData && typeof sharedScoreData.percentage === 'number' ? sharedScoreData.percentage : 0;
-             drawGameOverScreen(percentageToDisplay);
+            // Clear the canvas first
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground(); // Draw game over background
+            // Use fetched percentage, default to 0 if fetch failed or data invalid
+            const percentageToDisplay = sharedScoreData && typeof sharedScoreData.percentage === 'number' ? sharedScoreData.percentage : 0;
+            drawGameOverScreen(percentageToDisplay);
 
-             // Update the HTML game over element if it exists
-             if (gameOverText) {
-                 if (sharedScoreData && sharedScoreData.error) {
-                     gameOverText.innerHTML = `<h2>Error</h2><p>${sharedScoreData.error}</p><p class="restart-text">Tap or Press Space to play</p>`;
-                 } else if (sharedScoreData) {
-                      // Find the element that displays the percentage in the HTML game over div
-                     const finalScoreSpan = gameOverText.querySelector('#finalScore');
-                     if (finalScoreSpan) {
-                         finalScoreSpan.textContent = `${percentageToDisplay}%`;
-                     }
-                     // Ensure the restart text is correct
-                     const restartTextElement = gameOverText.querySelector('.restart-text');
-                     if (restartTextElement) {
-                          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                          restartTextElement.textContent = isMobile ? "Tap anywhere to play again" : "Press Space to play again";
-                     }
-                 } else {
-                      gameOverText.innerHTML = `<h2>Loading Error</h2><p>Could not display score</p><p class="restart-text">Tap or Press Space to play</p>`;
-                 }
-                  gameOverText.style.display = 'block'; // Make HTML overlay visible
-             }
+            // --- Automatically trigger upload after displaying the shared score screen ---
+            if (sharedScoreData && sharedScoreData._id) { // Changed from id to _id to match MongoDB
+                console.log(`Automatically uploading image for shared score ID: ${sharedScoreData._id}`);
+                // Use a small delay to ensure rendering is complete
+                setTimeout(() => {
+                    uploadScoreImage(sharedScoreData._id);
+                }, 100);
+            }
 
+            // Update the HTML game over element if it exists
+            if (gameOverText) {
+                if (sharedScoreData && sharedScoreData.error) {
+                    gameOverText.innerHTML = `<h2>Error</h2><p>${sharedScoreData.error}</p><p class="restart-text">Tap or Press Space to play</p>`;
+                } else if (sharedScoreData) {
+                    // Find the element that displays the percentage in the HTML game over div
+                    const finalScoreSpan = gameOverText.querySelector('#finalScore');
+                    if (finalScoreSpan) {
+                        finalScoreSpan.textContent = `${percentageToDisplay}%`;
+                    }
 
+                    // Add player info if available
+                    if (sharedScoreData.playerData) {
+                        const playerInfoDiv = gameOverText.querySelector('.player-info') || document.createElement('div');
+                        playerInfoDiv.className = 'player-info';
+                        playerInfoDiv.innerHTML = `
+                            <p class="player-name">${sharedScoreData.playerData.name || 'Anonymous'}</p>
+                            <p class="player-country">${sharedScoreData.playerData.country || 'Unknown Country'}</p>
+                        `;
+                        if (!gameOverText.querySelector('.player-info')) {
+                            gameOverText.insertBefore(playerInfoDiv, gameOverText.querySelector('.restart-text'));
+                        }
+                    }
+
+                    // Ensure the restart text is correct
+                    const restartTextElement = gameOverText.querySelector('.restart-text');
+                    if (restartTextElement) {
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        restartTextElement.textContent = isMobile ? "Tap anywhere to play again" : "Press Space to play again";
+                    }
+                } else {
+                    gameOverText.innerHTML = `<h2>Loading Error</h2><p>Could not display score</p><p class="restart-text">Tap or Press Space to play</p>`;
+                }
+                gameOverText.style.display = 'block'; // Make HTML overlay visible
+            }
         }).catch(imgError => {
-             console.error('Error loading images for shared score display:', imgError);
-             // Display an error on canvas if images fail
-             if (ctx) {
+            console.error('Error loading images for shared score display:', imgError);
+            // Display an error on canvas if images fail
+            if (ctx) {
                 ctx.font = "20px Arial";
                 ctx.fillStyle = "red";
                 ctx.textAlign = "center";
                 ctx.fillText("Error loading assets!", canvas.width / 2, canvas.height / 2);
-             }
+            }
         });
 
         // Prevent the game loop from starting automatically
@@ -1077,20 +1208,28 @@ if (!canvas) {
         const scoreId = pathSegments[2];
         console.log(`Detected shared score URL with ID: ${scoreId}. Loading score...`);
         gameRunning = false; // Ensure game doesn't start normally
-        loadAndDisplaySharedScore(scoreId); // Load and display the specific score
+        loadAndDisplaySharedScore(scoreId); // Fixed: Changed from loadAndDisplayScore to loadAndDisplaySharedScore
     } else {
-        // Normal game start if not a shared score URL
-        console.log('Not a shared score URL. Starting normal game.');
+        // Normal game start logic, now encapsulated in startGame function
+        console.log('Not a shared score URL. Waiting for user to start game.');
+        // The startGame function will be called by the Play Game button
+        // startGame(); // Removed automatic call
+    }
+
+    // --- New function to start the game ---
+    function startGame() {
+        console.log('Starting game...');
+        resetGame(); // Reset game state
         resizeCanvas(); // Initial canvas size set
         Promise.all([
-          new Promise(resolve => playerImg.onload = resolve),
-          new Promise(resolve => playerLeftImg.onload = resolve),
-          new Promise(resolve => kokokImg.onload = resolve),
-          new Promise(resolve => obstacleImg.onload = resolve),
-          new Promise(resolve => backgroundImg.onload = resolve),
-          new Promise(resolve => gameOverBackgroundImg.onload = resolve)
+          new Promise(resolve => { if (playerImg.complete) resolve(); else playerImg.onload = resolve; }),
+          new Promise(resolve => { if (playerLeftImg.complete) resolve(); else playerLeftImg.onload = resolve; }),
+          new Promise(resolve => { if (kokokImg.complete) resolve(); else kokokImg.onload = resolve; }),
+          new Promise(resolve => { if (obstacleImg.complete) resolve(); else obstacleImg.onload = resolve; }),
+          new Promise(resolve => { if (backgroundImg.complete) resolve(); else backgroundImg.onload = resolve; }),
+          new Promise(resolve => { if (gameOverBackgroundImg.complete) resolve(); else gameOverBackgroundImg.onload = resolve; })
         ]).then(() => {
-          console.log('All images loaded for normal game. Starting game...');
+          console.log('All images loaded for normal game. Starting game loop...');
           // Start game logic after resize and image loading
           setInterval(createObstacle, 1000);
           draw(); // Call draw to start the rendering loop
@@ -1103,6 +1242,10 @@ if (!canvas) {
                 ctx.fillText("Error loading game assets!", canvas.width / 2, canvas.height / 2);
             }
         });
+
+        // Hide the login container and show the game container
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
     }
 }
 

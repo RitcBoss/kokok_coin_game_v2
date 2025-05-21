@@ -13,16 +13,16 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/score/(.*)",
-      "dest": "/server.js"
+      "dest": "server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "public/$1"
     }
-  ]
-
+  ],
+  "env": {
+    "MONGODB_URI": "mongodb+srv://kokok_game:0987654321@kokokgame.og9smwk.mongodb.net/?retryWrites=true&w=majority&appName=kokokgame",
+    "JWT_SECRET": "kokok_game_secret_key_2024",
+    "GOOGLE_CLIENT_ID": "188046080865-pa83b8vs5dtkmfhf87up1spbmsijnape.apps.googleusercontent.com"
+  }
 } 
