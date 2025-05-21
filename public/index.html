@@ -530,25 +530,21 @@
             try {
                 // Show loading state
                 scoresList.innerHTML = `
-                     <div class="score-item loading" style="text-align: center; padding: 10px; color: #fff;">
-                         <div class="loading-spinner"></div>
-                         Loading scores...
-                     </div>
-                 `;
+                    <div class="score-item loading" style="text-align: center; padding: 10px; color: #fff;">
+                        <div class="loading-spinner"></div>
+                        Loading scores...
+                    </div>
+                `;
 
                 // Get the current origin (domain) for the API call
                 const apiUrl = window.location.origin;
                 console.log('Fetching scores from:', `${apiUrl}/api/scores/country-totals`);
                 
-                // Get the authentication token from localStorage
-                const token = localStorage.getItem('token');
-                
                 const response = await fetch(`${apiUrl}/api/scores/country-totals`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': token ? `Bearer ${token}` : ''
+                        'Content-Type': 'application/json'
                     }
                 });
 
@@ -556,11 +552,17 @@
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    console.error('Error response:', errorData);
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
                 const fetchedScores = await response.json();
                 console.log('Received scores:', fetchedScores);
+
+                if (!Array.isArray(fetchedScores)) {
+                    console.error('Invalid response format:', fetchedScores);
+                    throw new Error('Invalid response format from server');
+                }
 
                 // Create a map for quick lookup of fetched scores by country
                 const scoresMap = new Map();
@@ -577,34 +579,17 @@
                 // Sort the combined list by total score in descending order
                 allCountryScores.sort((a, b) => b.totalScore - a.totalScore);
 
-
                 if (allCountryScores.length === 0) {
                     scoresList.innerHTML = `
-                         <div class="score-item" style="text-align: center; padding: 10px; color: #fff;">
-                             No scores available yet
-                         </div>
-                      `;
+                        <div class="score-item" style="text-align: center; padding: 10px; color: #fff;">
+                            No scores available yet
+                        </div>
+                    `;
                     return;
                 }
 
-                // Add Worldwide score (assuming it's provided separately or calculated)
-                // For now, let's hardcode a placeholder or assume the first item is worldwide if available
-                let worldwideScoreHtml = '';
-                const worldwideScoreData = fetchedScores.find(score => score.country === 'Worldwide'); // Example: assuming 'Worldwide' is a country entry
-
-                if (worldwideScoreData) {
-                     worldwideScoreHtml = `
-                         <div class="score-item worldwide">
-                             <span class="rank">🌍</span> <!-- Globe emoji for Worldwide -->
-                             <span class="country-name">Worldwide</span>
-                             <span class="total-score">${worldwideScoreData.pps ? `<span style="color: #4CAF50;">${worldwideScoreData.pps} PPS</span> ` : ''}${worldwideScoreData.totalScore.toLocaleString()}</span>
-                         </div>
-                     `;
-                }
-
-                // Display the scores with animation, excluding worldwide if it was fetched as a country
+                // Display the scores with animation
                 const countryScoresHtml = allCountryScores
-                    .filter(score => score.country !== 'Worldwide') // Exclude if worldwide was in country list
                     .map((score, index) => {
                         const rank = index + 1;
                         let rankDisplay;
@@ -618,7 +603,7 @@
                             rankDisplay = rank;
                         }
 
-                        // Simple mapping for flags (add more as needed)
+                        // Get flag for country
                         const flagMap = {
                             'Thailand': '🇹🇭',
                             'Hong Kong': '🇭🇰',
@@ -641,89 +626,30 @@
                             'Czechia': '🇨🇿',
                             'Iraq': '🇮🇶',
                             'Serbia': '🇷🇸',
-                            'Norway': '🇳🇴',
-                            'Singapore': '🇸🇬',
-                            'United Kingdom': '🇬🇧',
-                            'Germany': '🇩🇪',
-                            'Spain': '🇪🇸',
-                            'Italy': '🇮🇹',
-                            'Australia': '🇦🇺',
-                            'New Zealand': '🇳🇿',
-                            'China': '🇨🇳',
-                            // Added flags for new countries
-                            'Canada': '🇨🇦',
-                            'Mexico': '🇲🇽',
-                            'Brazil': '🇧🇷',
-                            'Argentina': '🇦🇷',
-                            'Colombia': '🇨🇴',
-                            'Russia': '🇷🇺',
-                            'India': '🇮🇳',
-                            'Pakistan': '🇵🇰',
-                            'Bangladesh': '🇧🇩',
-                            'Turkey': '🇹🇷',
-                            'Nigeria': '🇳🇬',
-                            'South Africa': '🇿🇦',
-                            'Kenya': '🇰🇪',
-                            'Ghana': '🇬🇭',
-                            'Qatar': '🇶🇦',
-                            'Netherlands': '🇳🇱',
-                            'Belgium': '🇧🇪',
-                            'Switzerland': '🇨🇭',
-                            'Austria': '🇦🇹',
-                            'Portugal': '🇵🇹',
-                            'Greece': '🇬🇷',
-                            'Ireland': '🇮🇪',
-                            'Chile': '🇨🇱',
-                            'Peru': '🇵🇪',
-                            'Venezuela': '🇻🇪',
-                            'Iran': '🇮🇷',
-                            'Israel': '🇮🇱',
-                            'Algeria': '🇩🇿',
-                            'Morocco': '🇲🇦',
-                            'Ecuador': '🇪🇨',
-                            'Bolivia': '🇧🇴',
-                            'Paraguay': '🇵🇾',
-                            'Uruguay': '🇺🇾',
-                            'Ethiopia': '🇪🇹',
-                            'Angola': '🇦🇴',
-                            'Mozambique': '🇲🇿',
-                            'Ivory Coast': '🇨🇮',
-                            'Cameroon': '🇨🇲',
-                            'Ukraine': '🇺🇦',
-                            'Romania': '🇷🇴',
-                            'Hungary': '🇭🇺',
-                            'Bulgaria': '🇧🇬',
-                            'Croatia': '🇭🇷',
-                            'Bosnia and Herzegovina': '🇧🇦',
-                            'Kazakhstan': '🇰🇿',
-                            'Uzbekistan': '🇺🇿',
-                            'Kuwait': '🇰🇼',
-                            'Bahrain': '🇧🇭',
-                            'Oman': '🇴🇲',
-                            'Iceland': '🇮🇸',
+                            'Norway': '🇳🇴'
                         };
 
-                        const countryFlag = flagMap[score.country] || ''; // Get flag or empty string
+                        const countryFlag = flagMap[score.country] || '';
 
                         return `
-                     <div class="score-item" style="animation: fadeIn 0.5s ease-in-out ${index * 0.05}s;">
-                         <span class="rank">${rankDisplay}</span>
-                         <span class="country-name">${countryFlag} ${score.country || 'Unknown'}</span>
-                         <span class="total-score">${score.totalScore.toLocaleString()}</span>
-                     </div>
-                 `;
+                            <div class="score-item" style="animation: fadeIn 0.5s ease-in-out ${index * 0.05}s;">
+                                <span class="rank">${rankDisplay}</span>
+                                <span class="country-name">${countryFlag} ${score.country || 'Unknown'}</span>
+                                <span class="total-score">${score.totalScore.toLocaleString()}</span>
+                            </div>
+                        `;
                     }).join('');
 
-                 scoresList.innerHTML = worldwideScoreHtml + countryScoresHtml;
+                scoresList.innerHTML = countryScoresHtml;
 
             } catch (error) {
                 console.error('Error fetching country scores:', error);
                 scoresList.innerHTML = `
-                     <div class="score-item error" style="text-align: center; padding: 10px; color: #ff4444;">
-                         Failed to load scores. Please try again later.<br>
-                         <small style="font-size: 0.8em;">Error: ${error.message}</small>
-                     </div>
-                  `;
+                    <div class="score-item error" style="text-align: center; padding: 10px; color: #ff4444;">
+                        Failed to load scores. Please try again later.<br>
+                        <small style="font-size: 0.8em;">Error: ${error.message}</small>
+                    </div>
+                `;
             }
         }
 

@@ -13,6 +13,7 @@ const connectDB = require('./config/database');
 const scoreRoutes = require('./routes/scoreRoutes');
 const authRoutes = require('./routes/authRoutes');
 const { authenticateToken } = require('./middleware/auth');
+const scoreController = require('./controllers/scoreController');
 
 const app = express();
 const server = http.createServer(app);
@@ -94,9 +95,9 @@ app.use(async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 
 // Public score routes - these should be before the protected routes
-app.get('/api/scores/country-totals', scoreRoutes);
+app.get('/api/scores/country-totals', scoreController.getCountryTotals);
+app.get('/api/scores/top', scoreController.getTopScores);
 app.get('/api/scores/:id', scoreRoutes);
-app.get('/api/scores/top', scoreRoutes);
 
 // Protected score routes
 app.use('/api/scores', authenticateToken, scoreRoutes);
