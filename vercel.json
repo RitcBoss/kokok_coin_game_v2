@@ -12,6 +12,13 @@
   ],
   "routes": [
     {
+      "src": "/socket.io/socket.io.js",
+      "dest": "/node_modules/socket.io-client/dist/socket.io.js",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
+    },
+    {
       "src": "/api/scores/country-totals",
       "dest": "/server.js",
       "methods": ["GET", "OPTIONS"],
