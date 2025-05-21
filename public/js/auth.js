@@ -242,9 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('gameContainer').style.display = 'block';
         // Initialize game here
-        if (typeof initGame === 'function') {
-          initGame();
-        }
+        startGame();
       }
     });
   } else {
