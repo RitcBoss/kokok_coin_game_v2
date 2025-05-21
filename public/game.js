@@ -839,7 +839,7 @@ if (!canvas) {
         const y = touch.clientY - rect.top;
 
         if (!gameRunning) {
-            // Check if touch is on any button first
+            // Check if touch is on any button 
             if (isClickInsideButton(x, y, playAgainButtonArea) ||
                 isClickInsideButton(x, y, shareButtonArea) ||
                 isClickInsideButton(x, y, downloadButtonArea)) {
