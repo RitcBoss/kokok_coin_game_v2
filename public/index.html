@@ -547,7 +547,8 @@
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'include' // Include credentials for cross-origin requests
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 console.log('Response status:', response.status);
