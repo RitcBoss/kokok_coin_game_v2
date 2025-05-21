@@ -712,34 +712,15 @@
             }
         }
 
-        // Initialize game function (this was likely intended for the button click)
-        // function initGame() {
-        //     document.getElementById('backToMenu').style.display = 'none';
-        //     const canvas = document.getElementById('gameCanvas');
-        //     if (canvas) {
-        //         // Game initialization logic here
-        //     }
-        // }
-
-        // Add event listener to the Play Game button
-        // const gameButton = document.getElementById('gameButton');
-        // if (gameButton) {
-        //     gameButton.addEventListener('click', () => {
-        //         console.log('Play Game button clicked.');
-        //         startGame(); // Call the startGame function from game.js
-        //     });
-        // }
-
         // Add back to menu functionality
         document.getElementById('backToMenu').addEventListener('click', () => {
             document.getElementById('gameContainer').style.display = 'none';
             document.getElementById('loginContainer').style.display = 'block';
-            fetchCountryScores(); // Refresh scores when returning to menu
+            showMenuAndLoadScores(); // Use the function that handles showing menu and loading scores
         });
 
         // Fetch scores when the page loads and show menu
         document.addEventListener('DOMContentLoaded', () => {
-            // fetchCountryScores(); // Moved inside showMenuAndLoadScores
             // Only show the menu if not on a shared score URL
             const pathSegments = window.location.pathname.split('/');
             if (!(pathSegments.length === 3 && pathSegments[1] === 'score')) {
@@ -748,7 +729,7 @@
             // If it is a shared score URL, game.js will handle the display
         });
 
-        // Function to load a specific score
+        // Function to load a specific score (used for shared score links)
         async function loadScore(scoreId) {
             try {
                 console.log('Loading score:', scoreId);
