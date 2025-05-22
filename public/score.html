@@ -192,7 +192,8 @@
 
                 if (data && typeof data.score === 'number') {
                     scoreDisplayElement.innerHTML = `
-                        <div class="score-value">Up to : ${((data.score / 1000) * 100).toFixed(0)} %</div>
+                        <div class="score-value">Up to</div>
+                        <div class="score-value">${((data.score / 1000) * 100).toFixed(0)} %</div>
                         <!-- You might want to keep the percentage display or remove it -->
                         <!-- <div class="percentage">Up to ${data.percentage}%</div> -->
                     `;
