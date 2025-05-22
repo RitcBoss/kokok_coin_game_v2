@@ -119,6 +119,7 @@ class Auth {
     const logoutButton = document.getElementById('logoutButton');
     const userInfo = document.getElementById('userInfo');
     const gameButton = document.getElementById('gameButton');
+    const playNowButton = document.getElementById('playNowButton');
     const scoresButton = document.getElementById('scoresButton');
     const loginPrompt = document.getElementById('loginPrompt');
 
@@ -131,6 +132,7 @@ class Auth {
         userInfo.style.display = 'block';
       }
       if (gameButton) gameButton.style.display = 'block';
+      if (playNowButton) playNowButton.style.display = 'none';
       if (scoresButton) scoresButton.style.display = 'block';
       if (loginPrompt) loginPrompt.style.display = 'none';
     } else {
@@ -139,6 +141,7 @@ class Auth {
       if (logoutButton) logoutButton.style.display = 'none';
       if (userInfo) userInfo.style.display = 'none';
       if (gameButton) gameButton.style.display = 'none';
+      if (playNowButton) playNowButton.style.display = 'block';
       if (scoresButton) scoresButton.style.display = 'none';
       if (loginPrompt) loginPrompt.style.display = 'block';
     }
@@ -247,5 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   } else {
     console.log('Game button not found in DOM');
+  }
+
+  // Add Play Now button event listener
+  const playNowButton = document.getElementById('playNowButton');
+  if (playNowButton) {
+    console.log('Adding event listener to Play Now button');
+    playNowButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Play Now button clicked');
+      // Start the game without authentication
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('gameContainer').style.display = 'block';
+      startGame();
+    });
+  } else {
+    console.log('Play Now button not found in DOM');
   }
 });
