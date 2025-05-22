@@ -1752,6 +1752,15 @@ if (!canvas) {
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('gameContainer').style.display = 'block';
         
+        // Enter fullscreen on mobile devices
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            // Add a small delay to ensure the game is ready
+            setTimeout(() => {
+                enterFullscreen();
+            }, 100);
+        }
+        
         // Check if all images are loaded
         if (!areImagesLoaded()) {
             console.log('Waiting for images to load...');
@@ -1845,6 +1854,44 @@ if (!canvas) {
         drawBackground();
         drawPlayer();
         draw();
+    }
+
+    // Add fullscreen handling
+    function enterFullscreen() {
+        const element = document.documentElement;
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) { // Safari
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) { // IE11
+            element.msRequestFullscreen();
+        }
+    }
+
+    function exitFullscreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { // Safari
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE11
+            document.msExitFullscreen();
+        }
+    }
+
+    // Add event listeners for fullscreen changes
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+        if (!document.fullscreenElement && 
+            !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement &&
+            !document.msFullscreenElement) {
+            // Exited fullscreen
+            console.log('Exited fullscreen');
+        }
     }
 }
 
