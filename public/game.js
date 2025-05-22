@@ -415,54 +415,64 @@ if (!canvas) {
 
     // เพิ่ม touch controls สำหรับมือถือ
     canvas.addEventListener('touchstart', function(e) {
-       e.preventDefault(); // Prevent scrolling and default touch actions
+        e.preventDefault(); // Prevent scrolling and default touch actions
 
-       const touch = e.touches[0];
-       const rect = canvas.getBoundingClientRect();
-       const x = touch.clientX - rect.left;
-       const y = touch.clientY - rect.top;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
 
-       // Only process touches if game is over
+        // Only process touches if game is over
         if (!gameRunning) {
-           // First check if any button is pressed, regardless of position
-           if (isClickInsideButton(x, y, playAgainButtonArea)) {
-               resetGame();
-               return; // Stop processing
-           }
+            // First check if any button is pressed, regardless of position
+            if (isClickInsideButton(x, y, playAgainButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Redirect to the home page
+                window.location.replace('/');
+                return;
+            }
 
-           if (isClickInsideButton(x, y, shareButtonArea)) {
-             shareScore(shareButtonArea.percentage);
-             return; // Stop checking other buttons
-           }
+            if (isClickInsideButton(x, y, shareButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                shareScore(shareButtonArea.percentage);
+                return;
+            }
 
-           if (isClickInsideButton(x, y, downloadButtonArea)) {
-             navigateToScorePageForDownload();
-             return; // Stop processing other buttons
-           }
+            if (isClickInsideButton(x, y, downloadButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateToScorePageForDownload();
+                return;
+            }
 
-           // Only check top 50% for non-button touches
-           if (y > canvas.height / 2) {
-               return; // Ignore non-button touches in bottom half
-           }
+            // Only check top 50% for non-button touches
+            if (y > canvas.height / 2) {
+                return;
+            }
 
-           // Only allow tapping anywhere to restart if not clicking a button
-           const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-           if (isMobile && !isClickInsideButton(x, y, playAgainButtonArea) && 
-               !isClickInsideButton(x, y, shareButtonArea) && 
-               !isClickInsideButton(x, y, downloadButtonArea)) {
-               resetGame();
-               return;
-           }
+            // Only allow tapping anywhere to restart if not clicking a button
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && !isClickInsideButton(x, y, playAgainButtonArea) && 
+                !isClickInsideButton(x, y, shareButtonArea) && 
+                !isClickInsideButton(x, y, downloadButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Redirect to the home page
+                window.location.replace('/');
+                return;
+            }
         }
 
-       // Handle player movement touch logic only if game is running
+        // Handle player movement touch logic only if game is running
         if (gameRunning) {
-             const touchX = touch.clientX - canvas.getBoundingClientRect().left;
-             // Move player to touch position
-             const targetX = touchX - (player.width / 2);
-             // Keep player within canvas bounds
-             player.x = Math.max(0, Math.min(canvas.width - player.width, targetX));
-         }
+            const touchX = touch.clientX - canvas.getBoundingClientRect().left;
+            // Move player to touch position
+            const targetX = touchX - (player.width / 2);
+            // Keep player within canvas bounds
+            player.x = Math.max(0, Math.min(canvas.width - player.width, targetX));
+        }
     });
 
     // Update touchmove to handle continuous movement
@@ -1335,31 +1345,37 @@ if (!canvas) {
     }
 
     canvas.addEventListener('click', function(e) {
-      // Only process clicks if game is over
-      if (!gameRunning) {
-          const rect = canvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+        // Only process clicks if game is over
+        if (!gameRunning) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
 
-          // Check Play Again button first (always visible when !gameRunning)
-          if (isClickInsideButton(x, y, playAgainButtonArea)) {
-              resetGame();
-              return; // Stop processing
-          }
+            // Check Play Again button first (always visible when !gameRunning)
+            if (isClickInsideButton(x, y, playAgainButtonArea)) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop event propagation
+                // Redirect to the home page
+                window.location.replace('/');
+                return; // Stop processing
+            }
 
-          // Check Share button area (always visible when !gameRunning)
-          if (isClickInsideButton(x, y, shareButtonArea)) {
-            // Use the percentage stored in the shareButtonArea
-            shareScore(shareButtonArea.percentage);
-            return; // Stop checking other buttons
-          }
+            // Check Share button area (always visible when !gameRunning)
+            if (isClickInsideButton(x, y, shareButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                shareScore(shareButtonArea.percentage);
+                return;
+            }
 
-          // Check Download button area (always visible when !gameRunning)
-          if (isClickInsideButton(x, y, downloadButtonArea)) {
-            navigateToScorePageForDownload();
-            return; // Stop checking other buttons
-          }
-      }
+            // Check Download button area (always visible when !gameRunning)
+            if (isClickInsideButton(x, y, downloadButtonArea)) {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateToScorePageForDownload();
+                return;
+            }
+        }
     });
 
     // Move the shareScore function inside the main game scope
