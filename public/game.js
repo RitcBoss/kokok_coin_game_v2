@@ -672,16 +672,60 @@ if (!canvas) {
 
     // Function to create power-up
     function createPowerUp() {
-        // 50% chance to create power-up
+        // 4% chance to create power-up
         if (Math.random() < 0.04) {
-            const x = Math.floor(Math.random() * (canvas.width - POWER_UP_SIZE));
-            powerUps.push({
-                x,
-                y: 0,
-                width: POWER_UP_SIZE,
-                height: POWER_UP_SIZE,
-                speed: BASE_OBSTACLE_SPEED * currentSpeedMultiplier
-            });
+            const POWER_UP_SIZE = 70;
+            const MIN_DISTANCE = 150; // Increased minimum distance from obstacles
+            const SAFE_ZONE = 100; // Additional safe zone around the power-up
+            
+            // Try to find a valid position
+            let validPosition = false;
+            let attempts = 0;
+            let x = 0;
+            
+            while (!validPosition && attempts < 15) { // Increased max attempts
+                x = Math.floor(Math.random() * (canvas.width - POWER_UP_SIZE));
+                validPosition = true;
+                
+                // Check if position is too close to edges
+                if (x < SAFE_ZONE || x > canvas.width - POWER_UP_SIZE - SAFE_ZONE) {
+                    validPosition = false;
+                    attempts++;
+                    continue;
+                }
+                
+                // Check distance from all obstacles
+                for (let obstacle of obstacles) {
+                    // Calculate center points
+                    const powerUpCenterX = x + POWER_UP_SIZE/2;
+                    const powerUpCenterY = 0 + POWER_UP_SIZE/2;
+                    const obstacleCenterX = obstacle.x + obstacle.width/2;
+                    const obstacleCenterY = obstacle.y + obstacle.height/2;
+                    
+                    // Calculate distance between centers
+                    const dx = powerUpCenterX - obstacleCenterX;
+                    const dy = powerUpCenterY - obstacleCenterY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Check if too close to any obstacle
+                    if (distance < MIN_DISTANCE) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+            
+            // Only create power-up if we found a valid position
+            if (validPosition) {
+                powerUps.push({
+                    x,
+                    y: 0,
+                    width: POWER_UP_SIZE,
+                    height: POWER_UP_SIZE,
+                    speed: BASE_OBSTACLE_SPEED * currentSpeedMultiplier
+                });
+            }
         }
     }
 
