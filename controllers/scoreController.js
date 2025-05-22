@@ -58,7 +58,7 @@ exports.createScore = async (req, res) => {
         if (typeof score !== 'number' || score < 0) {
             return res.status(400).json({ message: 'Score must be a positive number' });
         }
-        if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
+        if (typeof percentage !== 'number' || percentage < 0) {
             return res.status(400).json({ message: 'Percentage must be a number between 0 and 100' });
         }
 

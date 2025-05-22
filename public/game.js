@@ -959,7 +959,8 @@ if (!canvas) {
             // Check if game over
             if (health <= 0) {
               gameRunning = false;
-              const percentage = Math.min(Math.round((score / 1000) * 100));
+              // Allow percentage over 100% for display
+              const percentage = Math.round((score / 1000) * 100);
               
               // Clear any existing invincibility timer
               if (invincibilityTimer) {
@@ -1379,7 +1380,7 @@ if (!canvas) {
     });
 
     // Move the shareScore function inside the main game scope
-    async function shareScore(percentage) {
+    async function shareScore(displayPercentage) {
       try {
         const apiUrl = window.location.origin;
         const token = localStorage.getItem('token');
@@ -1391,9 +1392,8 @@ if (!canvas) {
         // Get timezone
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         
-        // Calculate and validate percentage
-        const calculatedPercentage = Math.min(Math.round((score / 1000) * 100), 100);
-        const validPercentage = Math.max(0, calculatedPercentage);
+        // Calculate percentage to send to API (capped at 100 as per backend)
+        const percentageToSend = Math.min(Math.max(0, Math.round((score / 1000) * 100)), 100);
         
         // First, save the score to the database and get the score ID
         const response = await fetch(`${apiUrl}/api/scores`, {
@@ -1404,7 +1404,7 @@ if (!canvas) {
           },
           body: JSON.stringify({
             score: score,
-            percentage: validPercentage,
+            percentage: percentageToSend, // Use capped percentage for API
             timezone: timezone
           })
         });
@@ -1417,7 +1417,8 @@ if (!canvas) {
         const data = await response.json();
         const scoreId = data._id; // Changed from data.id to data._id to match MongoDB's ID field
         const scoreUrl = `${apiUrl}/score/${scoreId}`;
-        const shareText = `I survived up to ${validPercentage}% in KOKOK Game! Check out my score: ${scoreUrl}`;
+        // Use the displayPercentage (potentially > 100) for the share text
+        const shareText = `I survived up to ${displayPercentage}% in KOKOK Game! Check out my score: ${scoreUrl}`;
 
         // Check if we're in a secure context and if Web Share API is available
         if (window.isSecureContext && navigator.share) {
@@ -1536,9 +1537,8 @@ if (!canvas) {
                 throw new Error('You must be logged in to save your score');
             }
 
-            // Calculate percentage and ensure it's between 0 and 100
-            const calculatedPercentage = Math.min(Math.round((score / 1000) * 100), 100);
-            const validPercentage = Math.max(0, calculatedPercentage);
+            // Calculate percentage to send to API (capped at 100 as per backend)
+            const percentageToSend = Math.min(Math.max(0, Math.round((score / 1000) * 100)), 100);
 
             // Save the score to get an ID
             const apiUrl = window.location.origin;
@@ -1550,7 +1550,7 @@ if (!canvas) {
                 },
                 body: JSON.stringify({
                     score: score,
-                    percentage: validPercentage,
+                    percentage: percentageToSend, // Use capped percentage for API
                     timezone: timezone
                 })
             });
@@ -1597,15 +1597,15 @@ if (!canvas) {
                 console.log('Fetched shared score data:', sharedScoreData);
                 
                 // Validate the score data
-                if (!sharedScoreData || typeof sharedScoreData.score !== 'number' || typeof sharedScoreData.percentage !== 'number') {
+                if (!sharedScoreData || typeof sharedScoreData.score !== 'number') { // Check for score number
                     console.error('Invalid data format for shared score:', sharedScoreData);
-                    sharedScoreData = { score: 0, percentage: 0, error: 'Invalid score data' };
+                    sharedScoreData = { score: 0, percentage: 0, error: 'Invalid score data' }; // Ensure score is 0 in error case
                 }
             }
 
         } catch (error) {
             console.error(`Error during fetch for score ${scoreId}:`, error);
-            sharedScoreData = { score: 0, percentage: 0, error: 'Network Error' };
+            sharedScoreData = { score: 0, percentage: 0, error: 'Network Error' }; // Ensure score is 0 in error case
         }
 
         // Ensure images are loaded before drawing the final screen
@@ -1622,8 +1622,9 @@ if (!canvas) {
             // Clear the canvas first
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground(); // Draw game over background
-            // Use fetched percentage, default to 0 if fetch failed or data invalid
-            const percentageToDisplay = sharedScoreData && typeof sharedScoreData.percentage === 'number' ? sharedScoreData.percentage : 0;
+            // Use fetched raw score to calculate percentage for display
+            const percentageToDisplay = sharedScoreData && typeof sharedScoreData.score === 'number' ? 
+                Math.min(100, Math.round((sharedScoreData.score / 1000) * 100)) : 0;
             drawGameOverScreen(percentageToDisplay);
 
             // --- Automatically trigger upload after displaying the shared score screen ---
@@ -1643,7 +1644,7 @@ if (!canvas) {
                     // Find the element that displays the percentage in the HTML game over div
                     const finalScoreSpan = gameOverText.querySelector('#finalScore');
                     if (finalScoreSpan) {
-                        finalScoreSpan.textContent = `${percentageToDisplay}%`;
+                        finalScoreSpan.textContent = `${percentageToDisplay}%`; // Use the uncapped percentage
                     }
 
                     // Add player info if available

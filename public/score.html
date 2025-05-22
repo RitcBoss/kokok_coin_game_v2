@@ -70,7 +70,7 @@
         }
 
         .score-card h1 {
-            font-size:30px;
+            font-size: 30px;
             margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             color: #ffffff;
@@ -158,7 +158,7 @@
         </div>
 
         <!-- Changed from relative path to absolute path starting from root -->
-         <a href="/" class="back-to-game " >Play Again</a>
+        <a href="/" class="back-to-game ">Play Again</a>
         <img src="/images/kokok.png" alt="$KOKOK Rocket" class="score-image"
             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22><text x=%2210%22 y=%2260%22 font-size=%2220%22 fill=%22white%22>🚀 KOKOK</text></svg>';">
         <div class="kokok-text">$KOKOK</div>
@@ -190,9 +190,11 @@
 
                 const data = await response.json();
 
-                if (data && typeof data.percentage === 'number') {
+                if (data && typeof data.score === 'number') {
                     scoreDisplayElement.innerHTML = `
-                        <div class="score-value">Up to ${data.percentage}%</div>
+                        <div class="score-value">Up to : ${((data.score / 1000) * 100).toFixed(0)} %</div>
+                        <!-- You might want to keep the percentage display or remove it -->
+                        <!-- <div class="percentage">Up to ${data.percentage}%</div> -->
                     `;
                 } else {
                     throw new Error('Invalid score data format');
