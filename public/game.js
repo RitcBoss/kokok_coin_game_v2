@@ -1,17 +1,17 @@
-console.log('--- game.js started ---');
+// console.log('--- game.js started ---');
 
 const canvas = document.getElementById('gameCanvas');
-console.log('Canvas element found:', canvas);
+// console.log('Canvas element found:', canvas);
 
 if (!canvas) {
-    console.error('Canvas element not found!');
+    console.error('Canvas element not found!'); // Keep: Critical error
     // If canvas is not found, we cannot proceed
 } else {
     const ctx = canvas.getContext('2d');
-    console.log('Canvas context obtained:', ctx);
+    // console.log('Canvas context obtained:', ctx);
 
     if (!ctx) {
-        console.error('Failed to get 2D context for canvas!');
+        console.error('Failed to get 2D context for canvas!'); // Keep: Critical error
         // Handle case where context is not available
     }
 
@@ -37,6 +37,77 @@ if (!canvas) {
     let invincibilityTimer = null; // Store the timer reference
     let isFacingLeft = false; // Initialize player facing direction
 
+    // Boss system variables
+    let boss = null;
+    let bossHealth = 100;
+    let bossMaxHealth = 1000;
+    let bossImage = new Image();
+    let playerPowerImage = new Image(); // New image for player's power
+    let bossPowerImage = new Image(); // New image for boss's power
+    let bossPowerCoins = [];
+    let isBossActive = false;
+    let lastBossSpawnScore = 0;
+    const BOSS_SPAWN_SCORE_INTERVAL = 10000;
+    let bossAttackCoins = []; // Array to store boss's attack coins
+    let lastBossAttackTime = 0;
+    const BOSS_ATTACK_INTERVAL = 2000; // Attack every 2 seconds
+    let bossMoveSpeed = 2; // Speed of boss movement
+    let bossDirectionX = 1; // Random X direction
+    let bossDirectionY = 1; // Random Y direction
+    let lastBossDirectionChange = 0;
+    const BOSS_DIRECTION_CHANGE_INTERVAL = 1000; // Change direction every second
+
+    // Add image loading tracking
+    let imagesLoaded = {
+        player: false,
+        playerDie: false,
+        kokok: false,
+        kokokcoin: false,
+        coinpower: false,
+        obstacle: false,
+        mePa: false,
+        meElon: false,
+        meJerome: false,
+        meThrum: false,
+        mePu: false,
+        background: false,
+        gameOverBackground: false,
+        boss: false,
+        playerPower: false,
+        bossPower: false
+    };
+
+    // Load boss and power images with error handling
+    bossImage.onload = () => {
+        // console.log('meme_sos.png loaded');
+        imagesLoaded.boss = true;
+    };
+    bossImage.onerror = () => {
+        console.error('Failed to load meme_sos.png'); // Keep: Loading error
+        handleImageError(bossImage, 'images/meme_sos.png');
+    };
+    bossImage.src = 'images/meme_sos.png';
+
+    playerPowerImage.onload = () => {
+        // console.log('coinpower.png loaded');
+        imagesLoaded.playerPower = true;
+    };
+    playerPowerImage.onerror = () => {
+        console.error('Failed to load coinpower.png'); // Keep: Loading error
+        handleImageError(playerPowerImage, 'images/coinpower.png');
+    };
+    playerPowerImage.src = 'images/coinpower.png';
+
+    bossPowerImage.onload = () => {
+        // console.log('meme_pa.png loaded');
+        imagesLoaded.bossPower = true;
+    };
+    bossPowerImage.onerror = () => {
+        console.error('Failed to load me_pa.png'); // Keep: Loading error
+        handleImageError(bossPowerImage, 'images/me_pa.png');
+    };
+    bossPowerImage.src = 'images/me_pa.png';
+
     // Add a flag to indicate if we are viewing a shared score
     let isViewingSharedScore = false;
     let sharedScoreData = null; // To store fetched score data
@@ -56,16 +127,16 @@ if (!canvas) {
 
     // Add error handling for audio loading
     backgroundMusic.addEventListener('error', (e) => {
-        console.warn('Background music could not be loaded:', e);
+        console.warn('Background music could not be loaded:', e); // Keep: Loading error
         isMusicPlaying = false;
     });
 
     startMusic.addEventListener('error', (e) => {
-        console.warn('Start music could not be loaded:', e);
+        console.warn('Start music could not be loaded:', e); // Keep: Loading error
     });
 
     oofMusic.addEventListener('error', (e) => {
-        console.warn('Oof music could not be loaded:', e);
+        console.warn('Oof music could not be loaded:', e); // Keep: Loading error
     });
 
     // Set volume for oof sound
@@ -89,7 +160,7 @@ if (!canvas) {
     // Function to play music with retry
     function playMusic() {
         if (!backgroundMusic.src) {
-            console.warn('No music source available');
+            console.warn('No music source available'); // Keep: Warning for missing source
             return;
         }
         
@@ -98,9 +169,9 @@ if (!canvas) {
         if (playPromise !== undefined) {
             playPromise.then(() => {
                 isMusicPlaying = true;
-                console.log('Music started successfully');
+                // console.log('Music started successfully');
             }).catch(error => {
-                console.error('Error playing music:', error);
+                console.error('Error playing music:', error); // Keep: Playback error
                 isMusicPlaying = false;
                 // Only retry if the error is not related to user interaction
                 if (error.name !== 'NotAllowedError') {
@@ -225,150 +296,133 @@ if (!canvas) {
     const backgroundImg = new Image();
     const gameOverBackgroundImg = new Image();
 
-    // Add image loading tracking
-    let imagesLoaded = {
-        player: false,
-        playerDie: false,
-        kokok: false,
-        kokokcoin: false,
-        coinpower: false,
-        obstacle: false,
-        mePa: false,
-        meElon: false,
-        meJerome: false,
-        meThrum: false,
-        mePu: false,
-        background: false,
-        gameOverBackground: false
-    };
-
     // Update image loading handlers and set sources
     playerImg.onload = () => {
-        console.log('player.png loaded');
+        // console.log('player.png loaded');
         imagesLoaded.player = true;
     };
     playerImg.onerror = () => {
-        console.error('Failed to load player.png');
+        console.error('Failed to load player.png'); // Keep: Loading error
         handleImageError(playerImg, 'images/player.png');
     };
     playerImg.src = 'images/player.png';
 
     playerDieImg.onload = () => {
-        console.log('player_die.png loaded');
+        // console.log('player_die.png loaded');
         imagesLoaded.playerDie = true;
     };
     playerDieImg.onerror = () => {
-        console.error('Failed to load player_die.png');
+        console.error('Failed to load player_die.png'); // Keep: Loading error
         handleImageError(playerDieImg, 'images/player_die.png');
     };
     playerDieImg.src = 'images/player_die.png';
 
     kokokImg.onload = () => {
-        console.log('kokok.png loaded');
+        // console.log('kokok.png loaded');
         imagesLoaded.kokok = true;
     };
     kokokImg.onerror = () => {
-        console.error('Failed to load kokok.png');
+        console.error('Failed to load kokok.png'); // Keep: Loading error
         handleImageError(kokokImg, 'images/kokok.png');
     };
     kokokImg.src = 'images/kokok.png';
 
     kokokcoinImg.onload = () => {
-        console.log('kokokcoin.png loaded');
+        // console.log('kokokcoin.png loaded');
         imagesLoaded.kokokcoin = true;
     };
     kokokcoinImg.onerror = () => {
-        console.error('Failed to load kokokcoin.png');
+        console.error('Failed to load kokokcoin.png'); // Keep: Loading error
         handleImageError(kokokcoinImg, 'images/kokokcoin.png');
     };
     kokokcoinImg.src = 'images/kokokcoin.png';
 
     obstacleImg.onload = () => {
-        console.log('obstacle.png loaded');
+        // console.log('obstacle.png loaded');
         imagesLoaded.obstacle = true;
     };
     obstacleImg.onerror = () => {
-        console.error('Failed to load obstacle.png');
+        console.error('Failed to load obstacle.png'); // Keep: Loading error
         handleImageError(obstacleImg, 'images/obstacle.png');
     };
     obstacleImg.src = 'images/obstacle.png';
 
     mePaImg.onload = () => {
-        console.log('me_pa.png loaded');
+        // console.log('me_pa.png loaded');
         imagesLoaded.mePa = true;
     };
     mePaImg.onerror = () => {
-        console.error('Failed to load me_pa.png');
+        console.error('Failed to load me_pa.png'); // Keep: Loading error
         handleImageError(mePaImg, 'images/me_pa.png');
     };
     mePaImg.src = 'images/me_pa.png';
 
     meElonImg.onload = () => {
-        console.log('me_elon.png loaded');
+        // console.log('me_elon.png loaded');
         imagesLoaded.meElon = true;
     };
     meElonImg.onerror = () => {
-        console.error('Failed to load me_elon.png');
+        console.error('Failed to load me_elon.png'); // Keep: Loading error
         handleImageError(meElonImg, 'images/me_elon.png');
     };
     meElonImg.src = 'images/me_elon.png';
 
     meJeromeImg.onload = () => {
-        console.log('me_jerome.png loaded');
+        // console.log('me_jerome.png loaded');
         imagesLoaded.meJerome = true;
     };
     meJeromeImg.onerror = () => {
-        console.error('Failed to load me_jerome.png');
+        console.error('Failed to load me_jerome.png'); // Keep: Loading error
         handleImageError(meJeromeImg, 'images/me_jerome.png');
     };
     meJeromeImg.src = 'images/me_jerome.png';
 
     meThrumImg.onload = () => {
-        console.log('me_thrum.png loaded');
+        // console.log('me_thrum.png loaded');
         imagesLoaded.meThrum = true;
     };
     meThrumImg.onerror = () => {
-        console.error('Failed to load me_thrum.png');
+        console.error('Failed to load me_thrum.png'); // Keep: Loading error
         handleImageError(meThrumImg, 'images/me_thrum.png');
     };
     meThrumImg.src = 'images/me_thrum.png';
 
     mePuImg.onload = () => {
-        console.log('me_pu.png loaded');
+        // console.log('me_pu.png loaded');
         imagesLoaded.mePu = true;
     };
     mePuImg.onerror = () => {
-        console.error('Failed to load me_pu.png');
+        console.error('Failed to load me_pu.png'); // Keep: Loading error
         handleImageError(mePuImg, 'images/me_pu.png');
     };
     mePuImg.src = 'images/me_pu.png';
 
     backgroundImg.onload = () => {
-        console.log('wall.png loaded');
+        // console.log('bg.gif loaded');
         imagesLoaded.background = true;
     };
     backgroundImg.onerror = () => {
-        console.error('Failed to load wall.png');
-        handleImageError(backgroundImg, 'images/wall.png');
+        console.error('Failed to load bg.gif'); // Keep: Loading error
+        handleImageError(backgroundImg, 'images/bg.gif');
     };
-    backgroundImg.src = 'images/wall.png';
+    backgroundImg.src = 'images/bg.gif';
 
     gameOverBackgroundImg.onload = () => {
-        console.log('surviveclimb.png loaded');
+        // console.log('surviveclimb.png loaded');
         imagesLoaded.gameOverBackground = true;
     };
     gameOverBackgroundImg.onerror = () => {
-        console.error('Failed to load surviveclimb.png');
+        console.error('Failed to load surviveclimb.png'); // Keep: Loading error
         handleImageError(gameOverBackgroundImg, 'images/surviveclimb.png');
     };
     gameOverBackgroundImg.src = 'images/surviveclimb.png';
 
     coinpowerImg.onload = () => {
-        console.log('coinpower.png loaded');
+        // console.log('coinpower.png loaded');
         imagesLoaded.coinpower = true;
     };
     coinpowerImg.onerror = () => {
-        console.error('Failed to load coinpower.png');
+        console.error('Failed to load coinpower.png'); // Keep: Loading error
         handleImageError(coinpowerImg, 'images/coinpower.png');
     };
     coinpowerImg.src = 'images/coinpower.png';
@@ -414,7 +468,7 @@ if (!canvas) {
     });
 
     // เพิ่ม touch controls สำหรับมือถือ
-    canvas.addEventListener('touchstart', function(e) {
+    canvas.addEventListener('touchstart', function (e) {
         e.preventDefault(); // Prevent scrolling and default touch actions
 
         const touch = e.touches[0];
@@ -476,7 +530,7 @@ if (!canvas) {
     });
 
     // Update touchmove to handle continuous movement
-    canvas.addEventListener('touchmove', function(e) {
+    canvas.addEventListener('touchmove', function (e) {
         e.preventDefault();
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
@@ -506,7 +560,7 @@ if (!canvas) {
     }, { passive: false });
 
     // Update touchend to not reset position
-    canvas.addEventListener('touchend', function(e) {
+    canvas.addEventListener('touchend', function (e) {
         e.preventDefault();
         // No need to reset position on touchend
     });
@@ -517,7 +571,7 @@ if (!canvas) {
     let obstacleInterval = 1000; // Start with 1 second interval
     let currentSpeedMultiplier = 1;
     let hasReached5000 = false;
-    const BASE_OBSTACLE_SPEED = 3; // Base speed for obstacles
+    const BASE_OBSTACLE_SPEED = 1; // Base speed for obstacles
 
     // Function to get current game time in seconds
     function getGameTime() {
@@ -577,7 +631,7 @@ if (!canvas) {
 
     // Function to get image for obstacle type
     function getObstacleImage(type) {
-        switch(type) {
+        switch (type) {
             case 'me_pa': return mePaImg;
             case 'me_elon': return meElonImg;
             case 'me_jerome': return meJeromeImg;
@@ -614,7 +668,7 @@ if (!canvas) {
         if (shotsRemaining > 0) {
             // Create a new shot coin at player position
             shotCoins.push(createShotCoin(
-                player.x + player.width/2 - 15,
+                player.x + player.width / 2 - 15,
                 player.y
             ));
             shotsRemaining--;
@@ -632,10 +686,10 @@ if (!canvas) {
             // Check for collision with obstacles
             obstacles.forEach((obstacle, obstacleIndex) => {
                 // Calculate center points
-                const coinCenterX = coin.x + coin.width/2;
-                const coinCenterY = coin.y + coin.height/2;
-                const obstacleCenterX = obstacle.x + obstacle.width/2;
-                const obstacleCenterY = obstacle.y + obstacle.height/2;
+                const coinCenterX = coin.x + coin.width / 2;
+                const coinCenterY = coin.y + coin.height / 2;
+                const obstacleCenterX = obstacle.x + obstacle.width / 2;
+                const obstacleCenterY = obstacle.y + obstacle.height / 2;
 
                 // Calculate distance between centers
                 const dx = coinCenterX - obstacleCenterX;
@@ -643,7 +697,7 @@ if (!canvas) {
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
                 // Check for collision
-                if (distance < (coin.width/2 + obstacle.width/2)) {
+                if (distance < (coin.width / 2 + obstacle.width / 2)) {
                     // Remove the obstacle
                     obstacles.splice(obstacleIndex, 1);
                     // Deactivate the coin
@@ -663,6 +717,7 @@ if (!canvas) {
 
     // Function to draw shot coins
     function drawShotCoins() {
+        if (!gameRunning) return; //
         shotCoins.forEach(coin => {
             if (coin.active) {
                 ctx.drawImage(coinpowerImg, coin.x, coin.y, coin.width, coin.height);
@@ -697,10 +752,10 @@ if (!canvas) {
                 // Check distance from all obstacles
                 for (let obstacle of obstacles) {
                     // Calculate center points
-                    const powerUpCenterX = x + POWER_UP_SIZE/2;
-                    const powerUpCenterY = 0 + POWER_UP_SIZE/2;
-                    const obstacleCenterX = obstacle.x + obstacle.width/2;
-                    const obstacleCenterY = obstacle.y + obstacle.height/2;
+                    const powerUpCenterX = x + POWER_UP_SIZE / 2;
+                    const powerUpCenterY = 0 + POWER_UP_SIZE / 2;
+                    const obstacleCenterX = obstacle.x + obstacle.width / 2;
+                    const obstacleCenterY = obstacle.y + obstacle.height / 2;
                     
                     // Calculate distance between centers
                     const dx = powerUpCenterX - obstacleCenterX;
@@ -731,6 +786,7 @@ if (!canvas) {
 
     // Function to draw power-ups
     function drawPowerUps() {
+        if (!gameRunning) return; // Skip d
         powerUps.forEach(powerUp => {
             ctx.drawImage(coinpowerImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
         });
@@ -751,10 +807,10 @@ if (!canvas) {
 
         powerUps.forEach((powerUp, index) => {
             // Calculate center points
-            const playerCenterX = player.x + player.width/2;
-            const playerCenterY = player.y + player.height/2;
-            const powerUpCenterX = powerUp.x + powerUp.width/2;
-            const powerUpCenterY = powerUp.y + powerUp.height/2;
+            const playerCenterX = player.x + player.width / 2;
+            const playerCenterY = player.y + player.height / 2;
+            const powerUpCenterX = powerUp.x + powerUp.width / 2;
+            const powerUpCenterY = powerUp.y + powerUp.height / 2;
 
             // Calculate distance between centers
             const dx = playerCenterX - powerUpCenterX;
@@ -762,7 +818,7 @@ if (!canvas) {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // Check for collision
-            if (distance < (player.width/2 + powerUp.width/2)) {
+            if (distance < (player.width / 2 + powerUp.width / 2)) {
                 // Activate power
                 activatePower();
                 // Remove collected power-up
@@ -822,13 +878,14 @@ if (!canvas) {
     }
 
     function drawPlayer() {
+        if (!gameRunning) return; //
       // วาดขอบสีขาว
       ctx.save();
       ctx.beginPath();
       ctx.arc(
-        player.x + player.width/2,
-        player.y + player.height/2,
-        player.width/2,
+            player.x + player.width / 2,
+            player.y + player.height / 2,
+            player.width / 2,
         0,
         Math.PI * 2
       );
@@ -878,6 +935,7 @@ if (!canvas) {
     }
 
     function drawObstacles() {
+        if (!gameRunning) return; // Sk
         obstacles.forEach(ob => {
             try {
                 if (!ob.image || !ob.image.complete) {
@@ -888,9 +946,9 @@ if (!canvas) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(
-                    ob.x + ob.width/2,
-                    ob.y + ob.height/2,
-                    ob.width/2,
+                    ob.x + ob.width / 2,
+                    ob.y + ob.height / 2,
+                    ob.width / 2,
                     0,
                     Math.PI * 2
                 );
@@ -914,6 +972,7 @@ if (!canvas) {
     }
 
     function drawHearts() {
+        if (!gameRunning) return; //
       ctx.save();
       const startX = canvas.width - (heartSize + heartSpacing) * maxHealth - 20;
       const startY = 20;
@@ -954,10 +1013,10 @@ if (!canvas) {
 
       for (let ob of obstacles) {
         // Calculate center points of hitboxes
-        const playerCenterX = player.x + player.width/2;
-        const playerCenterY = player.y + player.height/2;
-        const obstacleCenterX = ob.x + ob.width/2;
-        const obstacleCenterY = ob.y + ob.height/2;
+            const playerCenterX = player.x + player.width / 2;
+            const playerCenterY = player.y + player.height / 2;
+            const obstacleCenterX = ob.x + ob.width / 2;
+            const obstacleCenterY = ob.y + ob.height / 2;
 
         // Calculate distance between centers
         const dx = playerCenterX - obstacleCenterX;
@@ -965,7 +1024,7 @@ if (!canvas) {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Calculate minimum distance for collision
-        const minDistance = (player.hitbox.width/2 + ob.hitbox.height/2);
+            const minDistance = (player.hitbox.width / 2 + ob.hitbox.height / 2);
 
         if (distance < minDistance) {
           // Check if enough time has passed since last damage
@@ -1041,6 +1100,34 @@ if (!canvas) {
                 })
                 .catch(error => {
                   console.error('Error saving score:', error);
+                                });
+                        } else {
+                            // If no token, save anonymously for sharing
+                            const apiUrl = window.location.origin;
+                             fetch(`${apiUrl}/api/scores/anonymous`, {
+                                method: 'POST',
+                                 headers: {
+                                     'Content-Type': 'application/json'
+                                 },
+                                 body: JSON.stringify({
+                                     score: score,
+                                     percentage: percentage,
+                                     timezone: timezone
+                                 })
+                             })
+                            .then(response => {
+                                if (!response.ok) {
+                                     throw new Error(`Failed to save anonymous score: ${response.status}`);
+                                }
+                                return response.json();
+                             })
+                            .then(data => {
+                                 // console.log('Anonymous score saved successfully:', data);
+                                 return data;
+                             })
+                            .catch(error => {
+                                 console.error('Error saving anonymous score:', error);
+                                 throw error;
                 });
               }
               
@@ -1065,28 +1152,35 @@ if (!canvas) {
       return false;
     }
 
-    function updateSpeed() {
-        // เพิ่มความเร็วทุก 5000 คะแนน แต่จำกัดที่ 3x
-        const newMultiplier = Math.min(3, 1 + (Math.floor(score / 5000) * 0.2));
-        if (newMultiplier !== speedMultiplier) {
-            speedMultiplier = newMultiplier;
-            currentSpeedMultiplier = speedMultiplier;
-            // อัพเดทความเร็วของสิ่งกีดขวางที่มีอยู่
-            obstacles.forEach(ob => {
-                ob.speed = BASE_OBSTACLE_SPEED * speedMultiplier;
-            });
-        }
-    }
+    // function updateSpeed() {
+    //     // เพิ่มความเร็วทุก 5000 คะแนน แต่จำกัดที่ 3x
+    //     const newMultiplier = Math.min(3, 1 + (Math.floor(score / 5000) * 0.2));
+    //     if (newMultiplier !== speedMultiplier) {
+    //         speedMultiplier = newMultiplier;
+    //         currentSpeedMultiplier = speedMultiplier;
+    //         // อัพเดทความเร็วของสิ่งกีดขวางที่มีอยู่
+    //         obstacles.forEach(ob => {
+    //             ob.speed = BASE_OBSTACLE_SPEED * speedMultiplier;
+    //         });
+    //     }
+    // }
 
     function drawBackground() {
-      // วาดพื้นหลังตามสถานะของเกม
+        // Draw background based on game state
       if (gameRunning) {
+            // Always draw the base background
         ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+            if (isBossActive) {
+                // During boss fight, draw a semi-transparent overlay to make the barrier less visible
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
       } else {
-        // วาดพื้นหลัง game over
+            // Draw game over background
         ctx.drawImage(gameOverBackgroundImg, 0, 0, canvas.width, canvas.height);
         
-        // เพิ่ม overlay สีดำเพื่อให้ข้อความอ่านง่ายขึ้น
+            // Add black overlay to make text more readable
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
@@ -1286,9 +1380,9 @@ if (!canvas) {
         radius = 5;
       }
       if (typeof radius === 'number') {
-        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+            radius = { tl: radius, tr: radius, br: radius, bl: radius };
       } else {
-        var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+            var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
         for (var side in defaultRadius) {
           radius[side] = radius[side] || defaultRadius[side];
         }
@@ -1332,11 +1426,46 @@ if (!canvas) {
       // Draw game background
       drawBackground();
 
-      // Increase score
+        // Update score
       score++;
 
+        // Check for boss spawn and update boss
+        spawnBoss();
+        updateBoss();
+
+        // Draw boss and power coins
+        if (isBossActive) {
+            drawBoss();
+            updateBossPowerCoins();
+            drawBossPowerCoins();
+            drawBossAttackCoins();
+
+            // Create power coins automatically at a higher rate during boss fight
+            if (Math.random() < 0.2) { // 20% chance each frame
+                createBossPowerCoin();
+            }
+
+            // Still allow obstacles to spawn during boss fight
+            const currentTime = Date.now();
+            if (currentTime - lastObstacleTime >= obstacleInterval) {
+                createObstacle();
+                lastObstacleTime = currentTime;
+            }
+            moveObstacles();
+            drawObstacles();
+        } else {
+            // Normal obstacle handling when boss is not active
+            const currentTime = Date.now();
+            if (currentTime - lastObstacleTime >= obstacleInterval) {
+                createObstacle();
+                lastObstacleTime = currentTime;
+            }
+            moveObstacles();
+            drawObstacles();
+        }
+
       // Update speed
-      updateSpeed();
+        //   updateSpeed();
 
       // Create new obstacles based on time
       const currentTime = Date.now();
@@ -1389,7 +1518,7 @@ if (!canvas) {
                clickY <= (buttonArea.y + buttonArea.height + touchPadding);
     }
 
-    canvas.addEventListener('click', function(e) {
+    canvas.addEventListener('click', function (e) {
         // Only process clicks if game is over
         if (!gameRunning) {
             const rect = canvas.getBoundingClientRect();
@@ -1530,12 +1659,12 @@ if (!canvas) {
 
     // Add this function to download the currently displayed canvas as an image
     function downloadSharedScoreImage() {
-        console.log('Attempting to download score image...');
+        // console.log('Attempting to download score image...');
 
         try {
             const canvas = document.getElementById('gameCanvas');
             if (!canvas) {
-                console.error('Canvas element not found for download.');
+                console.error('Canvas element not found for download.'); // Keep: Critical error
                 alert('Could not capture screen for download.');
                 return;
             }
@@ -1557,20 +1686,20 @@ if (!canvas) {
             link.click();
             document.body.removeChild(link);
 
-            console.log('Score image download triggered:', filename);
+            // console.log('Score image download triggered:', filename);
 
             // Show success message
             alert('Score image downloaded successfully!');
 
         } catch (error) {
-            console.error('Failed to capture canvas for download:', error);
+            console.error('Failed to capture canvas for download:', error); // Keep: Error in process
             alert('Could not download image. Please try again.');
         }
     }
 
     // Add this function to navigate to the score page for download
     async function navigateToScorePageForDownload() {
-        console.log('Attempting to navigate to score page for download...');
+        // console.log('Attempting to navigate to score page for download...');
     
         try {
             // Get timezone
@@ -1623,7 +1752,7 @@ if (!canvas) {
 
         try {
             const apiUrl = window.location.origin;
-            console.log(`Fetching score from: ${apiUrl}/api/scores/${scoreId}`);
+            // console.log(`Fetching score from: ${apiUrl}/api/scores/${scoreId}`);
             
             const response = await fetch(`${apiUrl}/api/scores/${scoreId}`, {
                 method: 'GET',
@@ -1634,21 +1763,21 @@ if (!canvas) {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to fetch shared score ${scoreId}: ${response.status} ${response.statusText} - ${errorText}`);
+                console.error(`Failed to fetch shared score ${scoreId}: ${response.status} ${response.statusText} - ${errorText}`); // Keep: API error
                 sharedScoreData = { score: 0, percentage: 0, error: `Failed to load score: ${response.statusText}` };
             } else {
                 sharedScoreData = await response.json();
-                console.log('Fetched shared score data:', sharedScoreData);
+                // console.log('Fetched shared score data:', sharedScoreData);
                 
                 // Validate the score data
                 if (!sharedScoreData || typeof sharedScoreData.score !== 'number') { // Check for score number
-                    console.error('Invalid data format for shared score:', sharedScoreData);
+                    console.error('Invalid data format for shared score:', sharedScoreData); // Keep: Data format error
                     sharedScoreData = { score: 0, percentage: 0, error: 'Invalid score data' }; // Ensure score is 0 in error case
                 }
             }
 
         } catch (error) {
-            console.error(`Error during fetch for score ${scoreId}:`, error);
+            console.error(`Error during fetch for score ${scoreId}:`, error); // Keep: Network/Fetch error
             sharedScoreData = { score: 0, percentage: 0, error: 'Network Error' }; // Ensure score is 0 in error case
         }
 
@@ -1662,7 +1791,7 @@ if (!canvas) {
             new Promise(resolve => { if (gameOverBackgroundImg.complete) resolve(); else gameOverBackgroundImg.onload = resolve; })
         ]).then(() => {
             // Now draw the game over screen using the fetched data
-            console.log('Images loaded for shared score display. Drawing game over screen.');
+            // console.log('Images loaded for shared score display. Drawing game over screen.');
             // Clear the canvas first
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground(); // Draw game over background
@@ -1673,7 +1802,7 @@ if (!canvas) {
 
             // --- Automatically trigger upload after displaying the shared score screen ---
             if (sharedScoreData && sharedScoreData._id) { // Changed from id to _id to match MongoDB
-                console.log(`Automatically uploading image for shared score ID: ${sharedScoreData._id}`);
+                // console.log(`Automatically uploading image for shared score ID: ${sharedScoreData._id}`);
                 // Use a small delay to ensure rendering is complete
                 setTimeout(() => {
                     uploadScoreImage(sharedScoreData._id);
@@ -1734,19 +1863,19 @@ if (!canvas) {
     const pathSegments = window.location.pathname.split('/');
     if (pathSegments.length === 3 && pathSegments[1] === 'score') {
         const scoreId = pathSegments[2];
-        console.log(`Detected shared score URL with ID: ${scoreId}. Loading score...`);
+        // console.log(`Detected shared score URL with ID: ${scoreId}. Loading score...`);
         gameRunning = false; // Ensure game doesn't start normally
         loadAndDisplaySharedScore(scoreId); // Fixed: Changed from loadAndDisplayScore to loadAndDisplaySharedScore
     } else {
         // Normal game start logic, now encapsulated in startGame function
-        console.log('Not a shared score URL. Waiting for user to start game.');
+        // console.log('Not a shared score URL. Waiting for user to start game.');
         // The startGame function will be called by the Play Game button
         // startGame(); // Removed automatic call
     }
 
     // --- New function to start the game ---
     function startGame() {
-        console.log('Starting game...');
+        // console.log('Starting game...');
         
         // Hide the login container and show the game container
         document.getElementById('loginContainer').style.display = 'none';
@@ -1763,7 +1892,7 @@ if (!canvas) {
         
         // Check if all images are loaded
         if (!areImagesLoaded()) {
-            console.log('Waiting for images to load...');
+            // console.log('Waiting for images to load...');
             // Show loading message
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.font = "20px Arial";
@@ -1778,14 +1907,14 @@ if (!canvas) {
             const checkImages = setInterval(() => {
                 if (areImagesLoaded()) {
                     clearInterval(checkImages);
-                    console.log('All images loaded, starting game...');
+                    // console.log('All images loaded, starting game...');
                     resetGame();
                     resizeCanvas();
-                    setInterval(createObstacle, 1000);
+                    setInterval(createObstacle, 1000); // Start obstacle creation
                     draw();
                 } else if (Date.now() - startTime > maxWaitTime) {
                     clearInterval(checkImages);
-                    console.error('Timeout waiting for images to load');
+                    console.error('Timeout waiting for images to load'); // Keep: Critical error
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = "red";
                     ctx.fillText("Error loading game assets!", canvas.width / 2, canvas.height / 2);
@@ -1797,7 +1926,7 @@ if (!canvas) {
         // Play start music
         startMusic.volume = 0.2;
         startMusic.play().catch(error => {
-            console.error('Error playing start music:', error);
+            console.error('Error playing start music:', error); // Keep: Playback error
         });
 
         resetGame();
@@ -1808,7 +1937,7 @@ if (!canvas) {
 
     // Add back the resetGame function
     function resetGame() {
-        console.log('Resetting game...');
+        // console.log('Resetting game...');
         score = 0;
         health = maxHealth;
         isInvincible = false;
@@ -1890,13 +2019,272 @@ if (!canvas) {
             !document.mozFullScreenElement &&
             !document.msFullscreenElement) {
             // Exited fullscreen
-            console.log('Exited fullscreen');
+            // console.log('Exited fullscreen');
         }
+    }
+
+    // Add boss-related functions
+    function spawnBoss() {
+        if (!isBossActive && score >= lastBossSpawnScore + BOSS_SPAWN_SCORE_INTERVAL) {
+            boss = {
+                x: canvas.width / 2 - 100, // Center the boss
+                y: 50, // Position at top of screen
+                width: 200,
+                height: 200,
+                health: bossMaxHealth
+            };
+            isBossActive = true;
+            lastBossSpawnScore = score;
+            bossHealth = bossMaxHealth;
+            lastBossAttackTime = Date.now();
+
+            // Clear all obstacles when boss spawns
+            obstacles = [];
+
+            // Activate unlimited power coins
+            isPowerActive = true;
+            powerDuration = Infinity; // Make power last until boss is defeated
+            shotsRemaining = Infinity; // Unlimited shots
+
+            // Force redraw background to update barrier visibility
+            drawBackground();
+        }
+    }
+
+    function updateBoss() {
+        if (isBossActive && boss) {
+            const currentTime = Date.now();
+
+            // Randomly change direction periodically
+            if (currentTime - lastBossDirectionChange >= BOSS_DIRECTION_CHANGE_INTERVAL) {
+                // Randomly change X direction
+                bossDirectionX = Math.random() < 0.5 ? -1 : 1;
+                // Randomly change Y direction
+                bossDirectionY = Math.random() < 0.5 ? -1 : 1;
+                lastBossDirectionChange = currentTime;
+            }
+
+            // Move boss in current direction
+            boss.x += bossMoveSpeed * bossDirectionX;
+            boss.y += bossMoveSpeed * bossDirectionY;
+
+            // Keep boss within screen bounds
+            if (boss.x <= 0) {
+                boss.x = 0;
+                bossDirectionX = 1;
+            } else if (boss.x + boss.width >= canvas.width) {
+                boss.x = canvas.width - boss.width;
+                bossDirectionX = -1;
+            }
+
+            // Keep boss within vertical bounds (top portion of screen)
+            if (boss.y <= 0) {
+                boss.y = 0;
+                bossDirectionY = 1;
+            } else if (boss.y + boss.height >= canvas.height * 0.3) { // Limit to top 30% of screen
+                boss.y = canvas.height * 0.3 - boss.height;
+                bossDirectionY = -1;
+            }
+
+            // Boss attack logic
+            if (currentTime - lastBossAttackTime >= BOSS_ATTACK_INTERVAL) {
+                createBossAttack();
+                lastBossAttackTime = currentTime;
+            }
+
+            // Update boss attack coins
+            updateBossAttackCoins();
+        }
+    }
+
+    function createBossAttack() {
+        if (isBossActive && boss) {
+            // Create attack coin from boss's position
+            const attackCoin = {
+                x: boss.x + boss.width / 2 - 25, // Adjusted for new size
+                y: boss.y + boss.height,
+                width: 100, // Updated to 50px
+                height: 100, // Updated to 50px
+                speed: 3
+            };
+            bossAttackCoins.push(attackCoin);
+        }
+    }
+
+    function updateBossAttackCoins() {
+        for (let i = bossAttackCoins.length - 1; i >= 0; i--) {
+            const coin = bossAttackCoins[i];
+            coin.y += coin.speed; // Move downward
+
+            // Check collision with player
+            if (checkCollision(coin, player)) {
+                // Reduce player health
+                if (!isInvincible) {
+                    health--;
+                    isInvincible = true;
+                    lastDamageTime = Date.now();
+
+                    // Start invincibility timer
+                    if (invincibilityTimer) {
+                        clearTimeout(invincibilityTimer);
+                    }
+                    invincibilityTimer = setTimeout(() => {
+                        isInvincible = false;
+                    }, invincibilityTime);
+
+                    // Check if game over
+                    if (health <= 0) {
+                        gameRunning = false;
+                        const percentage = Math.round((score / 1000) * 100);
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        drawBackground();
+                        drawGameOverScreen(percentage);
+                    }
+                }
+                bossAttackCoins.splice(i, 1);
+                continue;
+            }
+
+            // Remove coins that go off screen
+            if (coin.y > canvas.height) {
+                bossAttackCoins.splice(i, 1);
+            }
+        }
+    }
+
+    function drawBossAttackCoins() {
+        if (!gameRunning || !imagesLoaded.bossPower) return; 
+        bossAttackCoins.forEach(coin => {
+            try {
+                ctx.drawImage(bossPowerImage, coin.x, coin.y, coin.width, coin.height);
+            } catch (error) {
+                console.error('Error drawing boss attack coin:', error);
+            }
+        });
+    }
+
+    function drawBoss() {
+        if (!gameRunning || !isBossActive || !boss || !imagesLoaded.boss) return;
+
+        try {
+            // Draw boss image
+            ctx.drawImage(bossImage, boss.x, boss.y, boss.width, boss.height);
+
+            // Draw health bar
+            const healthBarWidth = boss.width;
+            const healthBarHeight = 20;
+            const healthBarX = boss.x;
+            const healthBarY = boss.y - 30;
+
+            // Draw background of health bar
+            ctx.fillStyle = '#333';
+            ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+            // Draw current health
+            const currentHealthWidth = (boss.health / bossMaxHealth) * healthBarWidth;
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(healthBarX, healthBarY, currentHealthWidth, healthBarHeight);
+        } catch (error) {
+            console.error('Error drawing boss:', error);
+        }
+    }
+
+    function updateBossPowerCoins() {
+        if (!isBossActive || !boss) return; // Early return if boss is not active or undefined
+
+        for (let i = bossPowerCoins.length - 1; i >= 0; i--) {
+            const coin = bossPowerCoins[i];
+            if (!coin) continue; // Skip if coin is undefined
+
+            try {
+                coin.y -= coin.speed;
+
+                // Check collision with boss
+                if (boss && checkCollision(coin, boss)) {
+                    boss.health -= 10; // Reduce boss health
+                    bossPowerCoins.splice(i, 1);
+
+                    // Check if boss is defeated
+                    if (boss.health <= 0) {
+                        isBossActive = false;
+                        boss = null;
+                        bossPowerCoins = [];
+                        // Resume obstacle spawning by resetting lastObstacleTime
+                        lastObstacleTime = Date.now();
+                        // Deactivate unlimited power coins
+                        isPowerActive = false;
+                        powerDuration = 0;
+                        shotsRemaining = 0;
+                        // Force redraw background to restore barrier
+                        drawBackground();
+                    }
+                    continue;
+                }
+
+                // Check collision with obstacles during boss fight
+                if (isBossActive) {
+                    for (let j = obstacles.length - 1; j >= 0; j--) {
+                        const obstacle = obstacles[j];
+                        if (obstacle && checkCollision(coin, obstacle)) {
+                            // Remove the obstacle
+                            obstacles.splice(j, 1);
+                            // Remove the power coin
+                            bossPowerCoins.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+
+                // Remove coins that go off screen
+                if (coin.y < 0) {
+                    bossPowerCoins.splice(i, 1);
+                }
+            } catch (error) {
+                console.error('Error updating power coin:', error);
+                // Remove the problematic coin
+                bossPowerCoins.splice(i, 1);
+            }
+        }
+    }
+
+    function createBossPowerCoin() {
+        if (!isBossActive || !boss || !player) return; // Add checks for required objects
+
+        try {
+            const powerCoin = {
+                x: player.x + player.width / 2 - 25,
+                y: player.y,
+                width: 50,
+                height: 50,
+                speed: 10
+            };
+            bossPowerCoins.push(powerCoin);
+        } catch (error) {
+            console.error('Error creating power coin:', error);
+        }
+    }
+
+    function drawBossPowerCoins() {
+        if (!gameRunning || !isBossActive || !boss || !player) return; // A
+        bossPowerCoins.forEach(coin => {
+            try {
+                ctx.drawImage(playerPowerImage, coin.x, coin.y, coin.width, coin.height);
+            } catch (error) {
+                console.error('Error drawing player power coin:', error);
+            }
+        });
+    }
+
+    function checkCollision(obj1, obj2) {
+        return obj1.x < obj2.x + obj2.width &&
+            obj1.x + obj1.width > obj2.x &&
+            obj1.y < obj2.y + obj2.height &&
+            obj1.y + obj1.height > obj2.y;
     }
 }
 
 function handleImageError(img, src) {
-  console.error(`Failed to load image: ${src}`);
+    console.error(`Failed to load image: ${src}`); // Keep: Loading error
   // Create a colored rectangle as fallback
   const canvas = document.createElement('canvas');
   canvas.width = 100;
